@@ -1,0 +1,204 @@
+package com.kraft.calculator.presentation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.kraft.calculator.domain.CalculatorMode
+import com.kraft.calculator.ui.theme.KraftRadius
+import com.kraft.calculator.ui.theme.KraftThemeColors
+import com.kraft.calculator.ui.theme.ThemeColors
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CalculatorScreen(
+    viewModel: CalculatorViewModel,
+    modifier: Modifier = Modifier,
+    colors: ThemeColors = if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light,
+) {
+    val state by viewModel.state.collectAsState()
+    var showAbout by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showHistory by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    if (showAbout) {
+        AboutScreen(onDismiss = { showAbout = false })
+    }
+
+    if (showHistory) {
+        ModalBottomSheet(
+            onDismissRequest = { showHistory = false },
+            sheetState = sheetState,
+            containerColor = colors.background,
+            shape = RoundedCornerShape(topStart = KraftRadius.large, topEnd = KraftRadius.large),
+            dragHandle = {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 8.dp, bottom = 4.dp)
+                        .width(36.dp)
+                        .height(6.dp)
+                        .background(
+                            color = colors.textPrimary.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(3.dp),
+                        ),
+                )
+            },
+        ) {
+            HistorySheet(
+                history = state.history,
+                onClearAll = { viewModel.clearHistory() },
+                onDeleteEntry = { viewModel.deleteHistoryEntry(it) },
+                onSelectEntry = { entry ->
+                    viewModel.onButtonPressed("AC")
+                    for (ch in entry.expression) {
+                        viewModel.onButtonPressed(ch.toString())
+                    }
+                    showHistory = false
+                },
+                colors = colors,
+            )
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { showAbout = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "About",
+                            tint = colors.accentBlue,
+                        )
+                    }
+                },
+                title = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        ModePill(
+                            currentMode = state.mode,
+                            onModeChange = { viewModel.onButtonPressed("MODE") },
+                            colors = colors,
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showHistory = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.History,
+                            contentDescription = "History",
+                            tint = colors.accentBlue,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colors.background.copy(alpha = 0.85f),
+                ),
+            )
+        },
+        containerColor = colors.background,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        modifier = modifier,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+        ) {
+            // Display area (fills remaining space)
+            CalculatorDisplay(
+                expression = state.expression,
+                result = state.result,
+                error = state.error,
+                mode = state.mode,
+                history = state.history,
+                lastResult = state.lastResult,
+                isSecondMode = state.isSecondMode,
+                isAlphaMode = state.isAlphaMode,
+                isHypMode = state.isHypMode,
+                isEngMode = state.isEngMode,
+                isSDMode = state.isSDMode,
+                isDCMode = state.isDCMode,
+                memory = state.memory,
+                angleMode = state.angleMode,
+                modifier = Modifier.weight(1f),
+                colors = colors,
+                snackbarHostState = snackbarHostState,
+            )
+
+            // Keypad
+            when (state.mode) {
+                CalculatorMode.BASIC -> BasicKeypad(
+                    onButtonPressed = viewModel::onButtonPressed,
+                    colors = colors,
+                )
+                CalculatorMode.SCIENTIFIC -> ScientificKeypad(
+                    onButtonPressed = viewModel::onButtonPressed,
+                    angleMode = state.angleMode,
+                    isSecondMode = state.isSecondMode,
+                    isAlphaMode = state.isAlphaMode,
+                    isHypMode = state.isHypMode,
+                    isEngMode = state.isEngMode,
+                    isSDMode = state.isSDMode,
+                    colors = colors,
+                )
+            }
+        }
+    }
+}
+
+/// Apple-style capsule toggle for Basic / Sci mode in the nav bar center.
+@Composable
+private fun ModePill(
+    currentMode: CalculatorMode,
+    onModeChange: () -> Unit,
+    colors: ThemeColors,
+) {
+    Row(
+        modifier = Modifier
+            .background(
+                color = colors.surfaceTertiary,
+                shape = RoundedCornerShape(KraftRadius.standard),
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        for (mode in CalculatorMode.values()) {
+            val isSelected = currentMode == mode
+            val label = if (mode == CalculatorMode.BASIC) "Basic" else "Sci"
+
+            Box(
+                modifier = Modifier
+                    .clickable { onModeChange() }
+                    .background(
+                        color = if (isSelected) colors.accentBlue else Color.Transparent,
+                        shape = RoundedCornerShape(KraftRadius.standard - 2.dp),
+                    )
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (isSelected) Color.White
+                    else colors.textTertiary,
+                )
+            }
+        }
+    }
+}
