@@ -321,28 +321,28 @@ object CalculatorEngine {
                         (token.precedence < opStack.last().precedence ||
                                 (token.precedence == opStack.last().precedence && !token.isRightAssociative))
                     ) {
-                        output.add(opStack.removeLast())
+                        output.add(opStack.removeAt(opStack.lastIndex))
                     }
                     opStack.add(token)
                 }
                 TokenType.LEFT_PAREN -> opStack.add(token)
                 TokenType.RIGHT_PAREN -> {
                     while (opStack.isNotEmpty() && opStack.last().type != TokenType.LEFT_PAREN) {
-                        output.add(opStack.removeLast())
+                        output.add(opStack.removeAt(opStack.lastIndex))
                     }
                     if (opStack.isEmpty() || opStack.last().type != TokenType.LEFT_PAREN) {
                         throw CalculatorException("Mismatched parentheses")
                     }
-                    opStack.removeLast()
+                    opStack.removeAt(opStack.lastIndex)
                     if (opStack.isNotEmpty() && opStack.last().type == TokenType.PREFIX_OP) {
-                        output.add(opStack.removeLast())
+                        output.add(opStack.removeAt(opStack.lastIndex))
                     }
                 }
             }
         }
 
         while (opStack.isNotEmpty()) {
-            val op = opStack.removeLast()
+            val op = opStack.removeAt(opStack.lastIndex)
             if (op.type == TokenType.LEFT_PAREN) throw CalculatorException("Mismatched parentheses")
             output.add(op)
         }
@@ -362,7 +362,7 @@ object CalculatorEngine {
                     stack.add(token.number ?: throw CalculatorException("Syntax Error"))
                 }
                 TokenType.POSTFIX_OP -> {
-                    val a = stack.removeLast()
+                    val a = stack.removeAt(stack.lastIndex)
                     when (token.value) {
                         "²" -> stack.add(a * a)
                         "³" -> stack.add(a * a * a)
@@ -378,8 +378,8 @@ object CalculatorEngine {
                     }
                 }
                 TokenType.BINARY_OP -> {
-                    val b = stack.removeLast()
-                    val a = stack.removeLast()
+                    val b = stack.removeAt(stack.lastIndex)
+                    val a = stack.removeAt(stack.lastIndex)
                     when (token.value) {
                         "+" -> stack.add(a + b)
                         "−" -> stack.add(a - b)
@@ -414,7 +414,7 @@ object CalculatorEngine {
                     }
                 }
                 TokenType.PREFIX_OP -> {
-                    val a = stack.removeLast()
+                    val a = stack.removeAt(stack.lastIndex)
                     when (token.value) {
                         "−" -> stack.add(-a)
                         "√" -> {
