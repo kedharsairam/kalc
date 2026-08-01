@@ -25,6 +25,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Sign with the debug keystore so CI-built release APKs are
+            // directly installable. Replace with a real signing config
+            // before publishing to the Play Store.
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
