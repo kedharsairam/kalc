@@ -8,6 +8,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarHostState
@@ -74,9 +75,11 @@ fun CalculatorDisplay(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .defaultMinSize(minHeight = 180.dp)
             .padding(start = 20.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+        verticalArrangement = Arrangement.Bottom,
     ) {
-        // ── Zone 1: Ticker tape + badges ──
+        // ── Zone 1: Badges (sci mode only, compact) ──
         if (mode == CalculatorMode.SCIENTIFIC) {
             BadgeRow(
                 isSecondMode = isSecondMode,
@@ -88,31 +91,42 @@ fun CalculatorDisplay(
                 memory = memory,
                 angleMode = angleMode,
                 colors = colors,
-                modifier = Modifier.padding(bottom = 2.dp),
+                modifier = Modifier.padding(bottom = 4.dp),
             )
         }
 
+        // ── Zone 2: Ticker tape (fills available space above, like Zeevy InlineTape) ──
         if (history.isNotEmpty()) {
             TickerTape(
                 history = history,
                 colors = colors,
-                modifier = Modifier.padding(bottom = 2.dp),
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .padding(bottom = 4.dp),
             )
+        } else {
+            Spacer(Modifier.weight(1f, fill = false))
         }
 
-        // ── Zone 2: Hero expression + result ──
+        // ── Zone 3: Fixed 2-line display (bottom-anchored, never shifts) ──
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Bottom,
         ) {
-            // Hero: the current expression (or result if no expression)
-            // Error shows ONLY here (not duplicated below)
+            // Expression line (subordinate, muted, shrinks) — Zeevy pattern
             // Long-press copies expression
             val heroScroll = rememberScrollState()
             LaunchedEffect(expression, result, error) {
                 heroScroll.scrollTo(heroScroll.maxValue)
+            }
+            // Auto-shrink expression based on length (24sp → 14sp floor)
+            val exprSize = remember(expression) {
+                when {
+                    expression.length > 30 -> 14.sp
+                    expression.length > 20 -> 18.sp
+                    expression.length > 12 -> 21.sp
+                    else -> 24.sp
+                }
             }
             Row(
                 modifier = Modifier
@@ -133,32 +147,29 @@ fun CalculatorDisplay(
                         expression.isNotEmpty() -> expression
                         else -> result
                     },
-                    fontSize = if (mode == CalculatorMode.BASIC) 32.sp else 28.sp,
-                    fontWeight = when {
-                        error != null -> FontWeight.Medium
-                        else -> FontWeight.Normal
-                    },
+                    fontSize = exprSize,
+                    fontWeight = FontWeight.Normal,
                     color = when {
                         error != null -> colors.accentRed
-                        else -> colors.textPrimary
+                        else -> colors.textSecondary
                     },
                     textAlign = TextAlign.End,
-                    maxLines = 1,
+                    maxLines = 2,
                     softWrap = false,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
 
-            // Result line — only when it differs from the hero expression
+            // Result line — HERO (57sp fixed, dominant) — Zeevy pattern
             // Long-press copies result
             if (expression.isNotEmpty() && result != expression && error == null) {
                 Text(
                     text = remember(result) { formatWithGrouping(result) },
-                    fontSize = if (mode == CalculatorMode.BASIC) 38.sp else 34.sp,
-                    fontWeight = FontWeight.Light,
+                    fontSize = 57.sp,
+                    fontWeight = FontWeight.Bold,
                     color = colors.textPrimary,
                     textAlign = TextAlign.End,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
