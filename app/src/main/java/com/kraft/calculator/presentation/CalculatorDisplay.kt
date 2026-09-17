@@ -12,7 +12,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -95,10 +97,15 @@ fun CalculatorDisplay(
             verticalArrangement = Arrangement.Center,
         ) {
             // Hero: the current expression (or result if no expression)
+            // Error shows ONLY here (not duplicated below)
+            val heroScroll = rememberScrollState()
+            LaunchedEffect(expression, result, error) {
+                heroScroll.scrollTo(heroScroll.maxValue)
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
+                    .horizontalScroll(heroScroll),
                 horizontalArrangement = Arrangement.End,
             ) {
                 Text(
@@ -119,6 +126,7 @@ fun CalculatorDisplay(
                     textAlign = TextAlign.End,
                     maxLines = 1,
                     softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
@@ -131,25 +139,10 @@ fun CalculatorDisplay(
                     color = colors.textPrimary,
                     textAlign = TextAlign.End,
                     maxLines = 1,
-                    overflow = TextOverflow.Visible,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 6.dp),
-                )
-            }
-
-            // Error message below hero
-            if (error != null) {
-                Text(
-                    text = error,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.accentRed,
-                    textAlign = TextAlign.End,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
                 )
             }
         }
