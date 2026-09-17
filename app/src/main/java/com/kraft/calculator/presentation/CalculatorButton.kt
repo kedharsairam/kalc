@@ -42,7 +42,7 @@ fun buttonColors(style: CalculatorButtonStyle, isActive: Boolean, colors: ThemeC
             foreground = colors.textPrimary,
         )
         CalculatorButtonStyle.equals -> ButtonColors(
-            background = colors.accentBlue,
+            background = colors.accentEquals,
             foreground = Color.White,
         )
         CalculatorButtonStyle.scientific -> ButtonColors(

@@ -17,6 +17,15 @@ val AccentYellow = Color(0xFFFFCC00)
 val AccentYellowDark = Color(0xFFFFD60A)
 val AccentPurple = Color(0xFFAF52DE)
 val AccentPurpleDark = Color(0xFFBF5AF2)
+// Distinct equals button color (green = go/confirm)
+val EqualsGreen = Color(0xFF34C759)
+val EqualsGreenDark = Color(0xFF30D158)
+
+// -- AMOLED dark variant (dark grey instead of pure black) --
+val BackgroundDarkGrey = Color(0xFF121212)
+val SurfaceDarkGrey = Color(0xFF1E1E1E)
+val SurfaceSecondaryDarkGrey = Color(0xFF2A2A2A)
+val SurfaceTertiaryDarkGrey = Color(0xFF3A3A3A)
 
 // -- Backgrounds & Surfaces --
 val BackgroundLight = Color(0xFFF2F2F7)
@@ -59,6 +68,7 @@ data class ThemeColors(
     val accentOrange: Color,
     val accentYellow: Color,
     val accentPurple: Color,
+    val accentEquals: Color,
 )
 
 object KraftThemeColors {
@@ -77,6 +87,7 @@ object KraftThemeColors {
         accentOrange = AccentOrange,
         accentYellow = AccentYellow,
         accentPurple = AccentPurple,
+        accentEquals = EqualsGreen,
     )
 
     val dark = ThemeColors(
@@ -94,5 +105,25 @@ object KraftThemeColors {
         accentOrange = AccentOrangeDark,
         accentYellow = AccentYellowDark,
         accentPurple = AccentPurpleDark,
+        accentEquals = EqualsGreenDark,
+    )
+
+    // AMOLED is pure black (default dark above); this is dark-grey variant
+    val amoledGrey = ThemeColors(
+        background = BackgroundDarkGrey,
+        surface = SurfaceDarkGrey,
+        surfaceSecondary = SurfaceSecondaryDarkGrey,
+        surfaceTertiary = SurfaceTertiaryDarkGrey,
+        textPrimary = TextPrimaryDark,
+        textSecondary = TextSecondaryDark,
+        textTertiary = TextTertiaryDark,
+        separator = SeparatorDark,
+        accentBlue = AccentBlueDark,
+        accentGreen = AccentGreenDark,
+        accentRed = AccentRedDark,
+        accentOrange = AccentOrangeDark,
+        accentYellow = AccentYellowDark,
+        accentPurple = AccentPurpleDark,
+        accentEquals = EqualsGreenDark,
     )
 }
