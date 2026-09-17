@@ -194,6 +194,7 @@ fun CalculatorDisplay(
                     text = remember(result) { formatWithGrouping(result) },
                     fontSize = 57.sp,
                     fontWeight = FontWeight.Bold,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     color = colors.textPrimary,
                     textAlign = TextAlign.End,
                     maxLines = 2,

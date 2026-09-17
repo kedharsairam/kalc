@@ -32,10 +32,20 @@ import com.kraft.calculator.ui.theme.ThemeColors
 fun CalculatorScreen(
     viewModel: CalculatorViewModel,
     modifier: Modifier = Modifier,
-    colors: ThemeColors = if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light,
+    colors: ThemeColors? = null,
 ) {
     val state by viewModel.state.collectAsState()
     val settings by viewModel.settings.collectAsState(initial = com.kraft.calculator.data.AppSettings())
+    // Resolve colors from settings theme, falling back to system
+    // DARK = dark grey (#121212), AMOLED = pure black (#000000)
+    val resolvedColors = colors ?: when (settings.theme) {
+        com.kraft.calculator.data.AppTheme.LIGHT -> KraftThemeColors.light
+        com.kraft.calculator.data.AppTheme.DARK -> KraftThemeColors.amoledGrey
+        com.kraft.calculator.data.AppTheme.AMOLED -> KraftThemeColors.dark
+        com.kraft.calculator.data.AppTheme.SYSTEM -> if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light
+    }
+    // Use resolvedColors below via local val shadowing the param
+    val colors = resolvedColors
     var showAbout by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
