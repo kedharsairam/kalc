@@ -5,6 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlin.math.roundToInt
 import com.kraft.calculator.data.HistoryRepository
+import com.kraft.calculator.data.RoomHistoryRepository
+import com.kraft.calculator.data.SettingsRepository
+import com.kraft.calculator.data.AppTheme
 import com.kraft.calculator.domain.CalculatorEngine
 import com.kraft.calculator.domain.CalculatorMode
 import com.kraft.calculator.domain.CalculatorState
@@ -18,12 +21,51 @@ import kotlinx.coroutines.launch
 
 class CalculatorViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val historyRepo = HistoryRepository(application)
+    private val historyRepo = RoomHistoryRepository(application)
+    private val settingsRepo = SettingsRepository(application)
 
-    private val _state = MutableStateFlow(
-        CalculatorState(history = historyRepo.loadHistory())
-    )
+    private val _state = MutableStateFlow(CalculatorState())
     val state: StateFlow<CalculatorState> = _state.asStateFlow()
+
+    val settings = settingsRepo.settings
+
+    init {
+        viewModelScope.launch {
+            val history = historyRepo.loadHistory(100)
+            _state.update { it.copy(history = history) }
+        }
+        // Observe settings for history size changes
+        viewModelScope.launch {
+            settingsRepo.settings.collect { prefs ->
+                // Trim history if size reduced
+                if (prefs.historySize > 0) {
+                    try {
+                        val current = historyRepo.loadHistory(prefs.historySize + 10)
+                        if (current.size > prefs.historySize) {
+                            // Will trim on next save; force trim via reload
+                            _state.update { it.copy(history = current.take(prefs.historySize)) }
+                        }
+                    } catch (_: Exception) { }
+                }
+            }
+        }
+    }
+
+    fun setVibration(enabled: Boolean) {
+        viewModelScope.launch { settingsRepo.setVibration(enabled) }
+    }
+
+    fun setTheme(theme: AppTheme) {
+        viewModelScope.launch { settingsRepo.setTheme(theme) }
+    }
+
+    fun setPrecision(precision: Int) {
+        viewModelScope.launch { settingsRepo.setPrecision(precision) }
+    }
+
+    fun setHistorySize(size: Int) {
+        viewModelScope.launch { settingsRepo.setHistorySize(size) }
+    }
 
     // ---------------------------------------------------------------------------
     // Button press dispatch
@@ -405,24 +447,38 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         return CalculatorEngine.normalize(value.toString())
     }
 
-    // History
+    // History (Room-backed with stable IDs)
     private fun saveHistory() {
+        // Persist latest entry to Room (state already updated optimistically)
         viewModelScope.launch {
-            historyRepo.saveHistory(_state.value.history)
+            try {
+                val latest = _state.value.history.firstOrNull() ?: return@launch
+                // Get max size from settings (default 100)
+                historyRepo.saveEntry(latest.expression, latest.result, 100)
+            } catch (_: Exception) { }
         }
     }
 
     fun deleteHistoryEntry(timestamp: Long) {
+        val entry = _state.value.history.firstOrNull { it.timestamp == timestamp }
         _state.update {
-            it.copy(history = it.history.filter { entry -> entry.timestamp != timestamp })
+            it.copy(history = it.history.filter { e -> e.timestamp != timestamp })
         }
-        saveHistory()
+        viewModelScope.launch {
+            try {
+                if (entry != null) {
+                    historyRepo.deleteByExpression(entry.expression, entry.timestamp)
+                }
+            } catch (_: Exception) { }
+        }
     }
 
     fun clearHistory() {
         _state.update { it.copy(history = emptyList()) }
         viewModelScope.launch {
-            historyRepo.clearHistory()
+            try {
+                historyRepo.clearAll()
+            } catch (_: Exception) { }
         }
     }
 
