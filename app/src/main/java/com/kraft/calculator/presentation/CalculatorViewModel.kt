@@ -24,6 +24,9 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     private val historyRepo = RoomHistoryRepository(application)
     private val settingsRepo = SettingsRepository(application)
 
+    @Volatile
+    private var currentPrecision: Int = 10
+
     private val _state = MutableStateFlow(CalculatorState())
     val state: StateFlow<CalculatorState> = _state.asStateFlow()
 
@@ -34,9 +37,10 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             val history = historyRepo.loadHistory(100)
             _state.update { it.copy(history = history) }
         }
-        // Observe settings for history size changes
+        // Observe settings for history size + precision changes
         viewModelScope.launch {
             settingsRepo.settings.collect { prefs ->
+                currentPrecision = prefs.decimalPrecision
                 // Trim history if size reduced
                 if (prefs.historySize > 0) {
                     try {
@@ -197,7 +201,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val lastResult = state.lastResult
         try {
             val result = CalculatorEngine.evaluate(
-                normalized, state.angleMode, lastResult, state.isEngMode
+                normalized, state.angleMode, lastResult, state.isEngMode, currentPrecision
             )
             val entry = CalculationEntry(
                 expression = normalized,
@@ -337,7 +341,8 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
                     try {
                         val base = CalculatorEngine.evaluate(
                             CalculatorEngine.normalize(baseExpr),
-                            state.angleMode, state.lastResult, state.isEngMode
+                            state.angleMode, state.lastResult, state.isEngMode,
+                            currentPrecision
                         ).toDoubleOrNull() ?: lastNum
                         "($baseExpr$lastOp$base×${match.groupValues[1]}÷100)"
                     } catch (_: Exception) {
@@ -487,7 +492,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         if (expr.isEmpty()) return "0"
         val normalized = CalculatorEngine.normalize(expr)
         return try {
-            CalculatorEngine.evaluate(normalized, _state.value.angleMode, _state.value.lastResult, _state.value.isEngMode)
+            CalculatorEngine.evaluate(normalized, _state.value.angleMode, _state.value.lastResult, _state.value.isEngMode, currentPrecision)
         } catch (_: Exception) { _state.value.result }
     }
 }
