@@ -7,7 +7,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.*
@@ -39,16 +38,11 @@ fun CalculatorScreen(
     val settings by viewModel.settings.collectAsState(initial = com.kraft.calculator.data.AppSettings())
     // Dark theme only — no theme picker
     val colors = KraftThemeColors.dark
-    var showAbout by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showConverter by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showHistory by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-
-    if (showAbout) {
-        AboutScreen(onDismiss = { showAbout = false })
-    }
 
     if (showSettings) {
         SettingsScreen(
@@ -102,15 +96,6 @@ fun CalculatorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = { showAbout = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.Info,
-                            contentDescription = "About",
-                            tint = colors.accentBlue,
-                        )
-                    }
-                },
                 title = {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
