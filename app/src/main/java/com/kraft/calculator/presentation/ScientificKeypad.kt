@@ -127,8 +127,8 @@ fun ScientificKeypad(
         val btnW = (w - gap * (cols + 1)) / cols
         if (btnW <= 0.dp) return@BoxWithConstraints
 
-        val functionBtnH = btnW * 0.5f
-        val numberBtnH = btnW * 0.8f
+        val functionBtnH = maxOf(btnW * 0.5f, 44.dp)
+        val numberBtnH = maxOf(btnW * 0.8f, 48.dp)
 
         // Total height = scientific keypad total (same calculation as KeypadSizing)
         // We just use the values directly here for the rows.

@@ -1,9 +1,9 @@
 package com.kraft.calculator.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
@@ -12,7 +12,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -174,18 +179,30 @@ private fun ModePill(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        for (mode in CalculatorMode.values()) {
+        for (mode in CalculatorMode.entries) {
             val isSelected = currentMode == mode
             val label = if (mode == CalculatorMode.BASIC) "Basic" else "Sci"
+            val description = if (mode == CalculatorMode.BASIC) {
+                if (isSelected) "Basic mode, selected" else "Switch to Basic mode"
+            } else {
+                if (isSelected) "Scientific mode, selected" else "Switch to Scientific mode"
+            }
 
             Box(
                 modifier = Modifier
-                    .clickable { onModeChange() }
+                    .defaultMinSize(minHeight = 44.dp)
+                    .clip(RoundedCornerShape(KraftRadius.standard - 2.dp))
+                    .selectable(
+                        selected = isSelected,
+                        onClick = { onModeChange() },
+                        role = Role.Tab,
+                    )
+                    .semantics { contentDescription = description }
                     .background(
                         color = if (isSelected) colors.accentBlue else Color.Transparent,
                         shape = RoundedCornerShape(KraftRadius.standard - 2.dp),
                     )
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
