@@ -25,6 +25,7 @@ fun ConverterScreen(
     colors: ThemeColors,
     modifier: Modifier = Modifier,
 ) {
+    var tool by remember { mutableStateOf("Units") }
     var category by remember { mutableStateOf(ConverterCategory.LENGTH) }
     var input by remember { mutableStateOf("1") }
     var fromIdx by remember { mutableStateOf(0) }
@@ -159,6 +160,64 @@ fun ConverterScreen(
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
+                }
+            }
+
+            // ── EMI Calculator ──
+            var loanAmt by remember { mutableStateOf("100000") }
+            var loanRate by remember { mutableStateOf("9") }
+            var loanMonths by remember { mutableStateOf("12") }
+            val emiResult = remember(loanAmt, loanRate, loanMonths) {
+                try {
+                    val p = loanAmt.toDoubleOrNull() ?: return@remember null
+                    val r = loanRate.toDoubleOrNull() ?: return@remember null
+                    val n = loanMonths.toIntOrNull() ?: return@remember null
+                    if (n <= 0) return@remember null
+                    com.kraft.calculator.domain.FinanceCalculators.emi(p, r, n)
+                } catch (_: Exception) { null }
+            }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Loan EMI", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    OutlinedTextField(value = loanAmt, onValueChange = { loanAmt = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Principal") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth())
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(value = loanRate, onValueChange = { loanRate = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Rate %") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
+                        OutlinedTextField(value = loanMonths, onValueChange = { loanMonths = it.filter { c -> c.isDigit() } }, label = { Text("Months") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.weight(1f))
+                    }
+                    if (emiResult != null) {
+                        Text("EMI: ₹${"%.2f".format(emiResult.emi)}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Text("Interest: ₹${"%.2f".format(emiResult.totalInterest)}  •  Total: ₹${"%.2f".format(emiResult.totalPayment)}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+
+            // ── GST Calculator ──
+            var gstAmt by remember { mutableStateOf("1000") }
+            var gstRate by remember { mutableStateOf("18") }
+            var gstForward by remember { mutableStateOf(true) }
+            val gstResult = remember(gstAmt, gstRate, gstForward) {
+                try {
+                    val a = gstAmt.toDoubleOrNull() ?: return@remember null
+                    val r = gstRate.toDoubleOrNull() ?: return@remember null
+                    com.kraft.calculator.domain.FinanceCalculators.gst(a, r, gstForward, true)
+                } catch (_: Exception) { null }
+            }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("GST (India)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        FilterChip(selected = gstForward, onClick = { gstForward = true }, label = { Text("Add GST") })
+                        Spacer(Modifier.width(8.dp))
+                        FilterChip(selected = !gstForward, onClick = { gstForward = false }, label = { Text("Remove GST") })
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(value = gstAmt, onValueChange = { gstAmt = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Amount") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
+                        OutlinedTextField(value = gstRate, onValueChange = { gstRate = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Rate %") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
+                    }
+                    if (gstResult != null) {
+                        Text("Tax: ₹${"%.2f".format(gstResult.tax)}  •  Total: ₹${"%.2f".format(gstResult.gross)}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Text("CGST: ₹${"%.2f".format(gstResult.cgst)}  •  SGST: ₹${"%.2f".format(gstResult.sgst)}", style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }
