@@ -35,7 +35,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             "=" -> evaluateExpression(current)
             "AC" -> clearAll()
             "CE" -> clearEntry()
-            "BS" -> backspace()
+            "BS", "⌫", "DEL" -> backspace()
             "Ans" -> insertText("Ans")
             "÷", "×", "−", "+", "^" -> insertOperator(
                 when (key) {
@@ -89,7 +89,6 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             "DEG" -> setAngleMode(AngleMode.DEGREE)
             "RAD" -> setAngleMode(AngleMode.RADIAN)
             "GRAD" -> setAngleMode(AngleMode.GRAD)
-            "SD" -> toggleSdMode()
             "DC" -> toggleDcMode()
             "ENG" -> toggleEngMode()
 
@@ -101,13 +100,40 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
             // Toggles
             "ALPHA" -> toggleAlpha()
-            "HYP" -> toggleHyp()
-            "2nd" -> toggleSecond()
 
             // Number keys
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" -> insertDigit(key)
             // Negative prefix
-            "(−)" -> insertPrefix("−")
+            "(−)", "±" -> insertPrefix("−")
+
+            // Sci keypad aliases
+            "SHIFT", "2nd" -> toggleSecond()
+            "S⇔D", "SD" -> toggleSdMode()
+            "hyp", "HYP" -> toggleHyp()
+            "DRG▶" -> cycleAngleMode()
+
+            // Postfix shorthands (x² means apply ² to current)
+            "x²" -> insertPostfix("²")
+            "x³" -> insertPostfix("³")
+            "x⁻¹" -> insertPostfix("⁻¹")
+
+            // Scientific notation entry
+            "×10ˣ", "×10^" -> insertText("×10^(")
+
+            // DMS entry
+            "°′″", "°~" -> insertText("°")
+
+            // Fraction shorthands (insert division template)
+            "a b/c", "d/c" -> insertText("(")
+
+            // Memory store/recall (map to M+ / MR for now)
+            "STO" -> memoryAdd()
+            "RCL" -> memoryRecall()
+
+            // Inverse hyperbolic (from alpha layer if sent)
+            "asinh" -> insertPrefix("sinh⁻¹")
+            "acosh" -> insertPrefix("cosh⁻¹")
+            "atanh" -> insertPrefix("tanh⁻¹")
 
             else -> { /* ignore */ }
         }
@@ -116,6 +142,12 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     // ---------------------------------------------------------------------------
     // Actions
     // ---------------------------------------------------------------------------
+    fun loadExpression(expression: String) {
+        _state.update {
+            it.copy(expression = expression, error = null, clearOnNextInput = false)
+        }
+    }
+
     private fun evaluateExpression(state: CalculatorState) {
         val normalized = CalculatorEngine.normalize(state.expression)
         if (normalized.isEmpty()) return
@@ -123,7 +155,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val lastResult = state.lastResult
         try {
             val result = CalculatorEngine.evaluate(
-                normalized, state.isDegreeMode, lastResult, state.isEngMode
+                normalized, state.angleMode, lastResult, state.isEngMode
             )
             val entry = CalculationEntry(
                 expression = normalized,
@@ -243,12 +275,37 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun evaluateModulo(state: CalculatorState) {
-        val expr = state.expression
-        val normalized = CalculatorEngine.normalize(expr)
-        if (normalized.isEmpty()) return
+        val expr = state.expression.trim()
+        if (expr.isEmpty()) return
         try {
-            val evaluated = CalculatorEngine.evaluate(normalized, state.isDegreeMode, state.lastResult, state.isEngMode)
-            val newExpr = "$expr×100"
+            // Find last number in expression
+            val numRegex = Regex("""(\d+\.?\d*)\s*$""")
+            val match = numRegex.find(expr) ?: return
+            val lastNum = match.groupValues[1].toDoubleOrNull() ?: return
+            val prefix = expr.substring(0, match.range.first).trim()
+
+            val newExpr = if (prefix.isEmpty()) {
+                // Just a number: X% -> X/100
+                "(${match.groupValues[1]}÷100)"
+            } else {
+                val lastOp = prefix.lastOrNull()
+                val baseExpr = prefix.dropLast(1).trim()
+                if ((lastOp == '+' || lastOp == '−') && baseExpr.isNotEmpty()) {
+                    // A+B% -> A+A*B/100, A-B% -> A-A*B/100
+                    try {
+                        val base = CalculatorEngine.evaluate(
+                            CalculatorEngine.normalize(baseExpr),
+                            state.angleMode, state.lastResult, state.isEngMode
+                        ).toDoubleOrNull() ?: lastNum
+                        "($baseExpr$lastOp$base×${match.groupValues[1]}÷100)"
+                    } catch (_: Exception) {
+                        "($prefix${match.groupValues[1]}÷100)"
+                    }
+                } else {
+                    // A×B% or A÷B% -> A×(B/100)
+                    "($prefix(${match.groupValues[1]}÷100))"
+                }
+            }
             _state.update { it.copy(expression = newExpr) }
         } catch (_: Exception) { }
     }
@@ -284,6 +341,15 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
     private fun setAngleMode(mode: AngleMode) {
         _state.update { it.copy(angleMode = mode) }
+    }
+
+    private fun cycleAngleMode() {
+        val next = when (_state.value.angleMode) {
+            AngleMode.DEGREE -> AngleMode.RADIAN
+            AngleMode.RADIAN -> AngleMode.GRAD
+            AngleMode.GRAD -> AngleMode.DEGREE
+        }
+        setAngleMode(next)
     }
 
     private fun toggleSdMode() {
@@ -365,7 +431,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         if (expr.isEmpty()) return "0"
         val normalized = CalculatorEngine.normalize(expr)
         return try {
-            CalculatorEngine.evaluate(normalized, _state.value.isDegreeMode, _state.value.lastResult, _state.value.isEngMode)
+            CalculatorEngine.evaluate(normalized, _state.value.angleMode, _state.value.lastResult, _state.value.isEngMode)
         } catch (_: Exception) { _state.value.result }
     }
 }

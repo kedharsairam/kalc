@@ -12,7 +12,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -121,7 +125,7 @@ fun CalculatorDisplay(
             // Result line — only when it differs from the hero expression
             if (expression.isNotEmpty() && result != expression && error == null) {
                 Text(
-                    text = result,
+                    text = remember(result) { formatWithGrouping(result) },
                     fontSize = if (mode == CalculatorMode.BASIC) 38.sp else 34.sp,
                     fontWeight = FontWeight.Light,
                     color = colors.textPrimary,
@@ -295,12 +299,39 @@ private fun MiniBadge(label: String, bg: Color, fg: Color) {
     }
 }
 
+/**
+ * Adds thousand separators to a numeric string for display.
+ * Only formats pure numbers (not expressions). Uses locale grouping.
+ * Engine output stays clean for parsing; this is display-layer only.
+ */
+fun formatWithGrouping(value: String): String {
+    // Only format if it's a pure number (optional minus, digits, optional decimal)
+    if (!value.matches(Regex("""^−?\d+(\.\d+)?$"""))) return value
+    try {
+        val isNegative = value.startsWith("−")
+        val abs = if (isNegative) value.drop(1) else value
+        val parts = abs.split(".")
+        val intPart = parts[0].toLongOrNull() ?: return value
+        // Don't group small numbers
+        if (intPart < 1000) return value
+        val symbols = DecimalFormatSymbols(Locale.getDefault())
+        val df = DecimalFormat("#,###", symbols)
+        df.isGroupingUsed = true
+        val grouped = df.format(intPart)
+        // Normalize minus sign
+        val result = if (parts.size > 1) "$grouped.${parts[1]}" else grouped
+        return if (isNegative) "−$result" else result
+    } catch (_: Exception) {
+        return value
+    }
+}
+
 private fun formatAns(value: Double): String {
     return if (value == value.roundToInt().toDouble()) {
         value.toInt().toString()
     } else {
         // Show up to 4 decimal places, strip trailing zeros
-        val formatted = String.format("%.4f", value).trimEnd('0')
+        val formatted = String.format(Locale.US, "%.4f", value).trimEnd('0')
         formatted.trimEnd('.')
     }
 }

@@ -62,10 +62,7 @@ fun CalculatorScreen(
                 onClearAll = { viewModel.clearHistory() },
                 onDeleteEntry = { viewModel.deleteHistoryEntry(it) },
                 onSelectEntry = { entry ->
-                    viewModel.onButtonPressed("AC")
-                    for (ch in entry.expression) {
-                        viewModel.onButtonPressed(ch.toString())
-                    }
+                    viewModel.loadExpression(entry.expression)
                     showHistory = false
                 },
                 colors = colors,
