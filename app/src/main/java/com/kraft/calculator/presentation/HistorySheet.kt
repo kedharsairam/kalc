@@ -2,6 +2,8 @@ package com.kraft.calculator.presentation
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -103,13 +105,41 @@ fun HistorySheet(
             ) {
                 items(
                     items = history,
-                    key = { it.timestamp },
+                    key = { "${it.timestamp}_${it.expression.hashCode()}" },
                 ) { entry ->
-                    HistoryTile(
-                        entry = entry,
-                        colors = colors,
-                        onSelect = { onSelectEntry(entry) },
+                    val dismissState = androidx.compose.material3.rememberSwipeToDismissBoxState(
+                        confirmValueChange = { value ->
+                            if (value == androidx.compose.material3.SwipeToDismissBoxValue.EndToStart) {
+                                onDeleteEntry(entry.timestamp)
+                                true
+                            } else false
+                        }
                     )
+                    androidx.compose.material3.SwipeToDismissBox(
+                        state = dismissState,
+                        enableDismissFromStartToEnd = false,
+                        backgroundContent = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(colors.accentRed)
+                                    .padding(end = 20.dp),
+                                contentAlignment = Alignment.CenterEnd,
+                            ) {
+                                Text(
+                                    text = "Delete",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                            }
+                        },
+                    ) {
+                        HistoryTile(
+                            entry = entry,
+                            colors = colors,
+                            onSelect = { onSelectEntry(entry) },
+                        )
+                    }
                     HorizontalDivider(
                         thickness = 0.5.dp,
                         color = colors.separator,
