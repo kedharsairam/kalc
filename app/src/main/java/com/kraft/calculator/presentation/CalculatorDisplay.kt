@@ -308,9 +308,10 @@ private fun PreviewBar(
         }
 
         // Right: status badges
+        // Text colors fixed for contrast on accent backgrounds (not theme-dependent)
         Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
             if (memory != 0.0) {
-                MiniBadge("M", colors.accentYellow, if (isSystemInDarkTheme()) Color.Black else Color.White)
+                MiniBadge("M", colors.accentYellow, Color.Black)
             }
 
             if (mode == CalculatorMode.SCIENTIFIC) {
@@ -323,12 +324,12 @@ private fun PreviewBar(
                     colors.surfaceTertiary,
                     colors.textTertiary,
                 )
-                if (isSecondMode) MiniBadge("SHIFT", colors.accentOrange, if (isSystemInDarkTheme()) Color.Black else Color.White)
+                if (isSecondMode) MiniBadge("SHIFT", colors.accentOrange, Color.Black)
                 if (isAlphaMode) MiniBadge("ALPHA", colors.accentRed, Color.White)
-                if (isHypMode) MiniBadge("HYP", colors.accentOrange, if (isSystemInDarkTheme()) Color.Black else Color.White)
+                if (isHypMode) MiniBadge("HYP", colors.accentOrange, Color.Black)
                 if (isEngMode) MiniBadge("ENG", colors.surfaceTertiary, colors.textTertiary)
-                if (isSDMode) MiniBadge("SD", colors.accentGreen, Color.White)
-                if (isDCMode) MiniBadge("d/c", colors.accentGreen, Color.White)
+                if (isSDMode) MiniBadge("SD", colors.accentGreen, Color.Black)
+                if (isDCMode) MiniBadge("d/c", colors.accentGreen, Color.Black)
             }
         }
     }
