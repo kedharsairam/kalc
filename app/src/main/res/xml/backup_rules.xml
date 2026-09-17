@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude calculation history from cloud backup (privacy) -->
+    <exclude domain="database" path="kalc_history.db"/>
+    <exclude domain="database" path="kalc_history.db-journal"/>
+    <exclude domain="database" path="kalc_history.db-wal"/>
+    <exclude domain="sharedpref" path="kalc_settings"/>
+    <exclude domain="sharedpref" path="calculator_history"/>
+</full-backup-content>
