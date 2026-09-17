@@ -3,7 +3,7 @@
 A clean, private calculator for Android. No ads. No analytics. No trackers.
 
 <p align="center">
-  <a href="https://github.com/kedharsairam/kalc-android/releases/latest"><img src="https://img.shields.io/github/v/release/kedharsairam/kalc-android?style=for-the-badge&label=Download" alt="Download APK"></a>
+  <a href="https://github.com/kedharsairam/kalc/releases/latest"><img src="https://img.shields.io/github/v/release/kedharsairam/kalc?style=for-the-badge&label=Download" alt="Download APK"></a>
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
   <img src="https://img.shields.io/badge/Platform-Android-blue?style=for-the-badge" alt="Android">
 </p>

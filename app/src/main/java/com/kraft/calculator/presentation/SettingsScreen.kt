@@ -113,7 +113,7 @@ fun SettingsScreen(
                 )
                 ListItem(
                     headlineContent = { Text("Source code") },
-                    supportingContent = { Text("github.com/kedharsairam/kalc-android") },
+                    supportingContent = { Text("github.com/kedharsairam/kalc") },
                 )
             }
         }
