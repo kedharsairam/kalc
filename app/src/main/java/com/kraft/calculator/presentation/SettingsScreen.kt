@@ -96,8 +96,20 @@ fun SettingsScreen(
             // About
             SettingsSection(title = "About") {
                 ListItem(
+                    headlineContent = { Text("Kalc") },
+                    supportingContent = { Text("Private calculator — no ads, no trackers") },
+                )
+                ListItem(
                     headlineContent = { Text("Version") },
-                    supportingContent = { Text(com.kraft.calculator.BuildConfig.VERSION_NAME) },
+                    supportingContent = { Text("${com.kraft.calculator.BuildConfig.VERSION_NAME} (${com.kraft.calculator.BuildConfig.VERSION_CODE})") },
+                )
+                ListItem(
+                    headlineContent = { Text("Developer") },
+                    supportingContent = { Text("Kedhar Sairam") },
+                )
+                ListItem(
+                    headlineContent = { Text("License") },
+                    supportingContent = { Text("MIT — open source") },
                 )
                 ListItem(
                     headlineContent = { Text("Source code") },
