@@ -110,7 +110,7 @@ fun HistorySheet(
                     color = colors.textPrimary,
                 )
                 Text(
-                    text = "Results you calculate will appear here.\nSwipe left on any entry to delete it.",
+                    text = "Results you calculate will appear here.\nTap an entry to reload it.",
                     fontSize = 14.sp,
                     color = colors.textSecondary,
                     textAlign = TextAlign.Center,
@@ -126,40 +126,13 @@ fun HistorySheet(
                     items = history,
                     key = { "${it.timestamp}_${it.expression.hashCode()}" },
                 ) { entry ->
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = { value ->
-                            if (value == SwipeToDismissBoxValue.EndToStart) {
-                                onDeleteEntry(entry.timestamp)
-                                true
-                            } else false
-                        }
+                    HistoryTile(
+                        entry = entry,
+                        colors = colors,
+                        onSelect = { onSelectEntry(entry) },
+                        onDelete = { onDeleteEntry(entry.timestamp) },
+                        modifier = Modifier.animateItem(),
                     )
-                    SwipeToDismissBox(
-                        state = dismissState,
-                        enableDismissFromStartToEnd = false,
-                        backgroundContent = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(colors.accentRed)
-                                    .padding(end = 24.dp),
-                                contentAlignment = Alignment.CenterEnd,
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.DeleteOutline,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp),
-                                )
-                            }
-                        },
-                    ) {
-                        HistoryTile(
-                            entry = entry,
-                            colors = colors,
-                            onSelect = { onSelectEntry(entry) },
-                        )
-                    }
                 }
             }
         }
@@ -170,24 +143,30 @@ fun HistorySheet(
 private fun HistoryTile(
     entry: CalculationEntry,
     onSelect: () -> Unit,
+    onDelete: () -> Unit,
     colors: ThemeColors,
+    modifier: Modifier = Modifier,
 ) {
     val timeLabel = remember(entry.timestamp) { relativeTime(entry.timestamp) }
     Surface(
         onClick = onSelect,
         color = Color.Transparent,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .semantics {
                 contentDescription = "${entry.expression} equals ${entry.result}. Tap to reload."
             },
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.Start,
+                .padding(start = 20.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.Start,
+            ) {
             Text(
                 text = entry.expression,
                 fontSize = 15.sp,
@@ -218,6 +197,18 @@ private fun HistoryTile(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
+            }
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(44.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DeleteOutline,
+                    contentDescription = "Delete ${entry.expression}",
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
         }
     }
 }
