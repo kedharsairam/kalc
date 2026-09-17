@@ -21,6 +21,19 @@ import kotlinx.coroutines.launch
 
 class CalculatorViewModel(application: Application) : AndroidViewModel(application) {
 
+    companion object {
+        /** Matches `name = expression` assignments. Names: lowercase, 1-12 chars. */
+        private val ASSIGNMENT_REGEX = Regex("^([a-z_][a-z0-9_]{0,11})\\s*=\\s*(.+)$")
+
+        /** Engine function/constant names that cannot be used as variables. */
+        private val RESERVED_VARIABLE_NAMES = setOf(
+            "sin", "cos", "tan", "asin", "acos", "atan",
+            "ln", "log", "exp", "abs",
+            "sinh", "cosh", "tanh",
+            "e",
+        )
+    }
+
     private val historyRepo = RoomHistoryRepository(application)
     private val settingsRepo = SettingsRepository(application)
 
@@ -78,7 +91,11 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         val current = _state.value
 
         when (key) {
-            "=" -> evaluateExpression(current)
+            "=" -> {
+                // In ALPHA mode "=" types a literal "=" for variable assignment
+                // (e.g. rent=1200); otherwise it evaluates the expression.
+                if (current.isAlphaMode) insertAssignmentOperator() else evaluateExpression(current)
+            }
             "AC" -> clearAll()
             "CE" -> clearEntry()
             "BS", "⌫", "DEL" -> backspace()
@@ -181,7 +198,13 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             "acosh" -> insertPrefix("cosh⁻¹")
             "atanh" -> insertPrefix("tanh⁻¹")
 
-            else -> { /* ignore */ }
+            else -> {
+                // Variable name entry: the ALPHA layer sends A-Z; store lowercase.
+                if (key.length == 1 && (key[0] in 'A'..'Z' || key[0] in 'a'..'z')) {
+                    insertText(key.lowercase())
+                }
+                /* else ignore */
+            }
         }
     }
 
@@ -195,13 +218,24 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun evaluateExpression(state: CalculatorState) {
-        val normalized = CalculatorEngine.normalize(state.expression)
+        val raw = state.expression.trim()
+        if (raw.isEmpty()) return
+
+        // Variable assignment: name = expression (e.g. rent = 1200)
+        val assignment = ASSIGNMENT_REGEX.matchEntire(raw)
+        if (assignment != null) {
+            evaluateAssignment(state, assignment.groupValues[1], assignment.groupValues[2])
+            return
+        }
+
+        val normalized = CalculatorEngine.normalize(raw)
         if (normalized.isEmpty()) return
 
         val lastResult = state.lastResult
         try {
             val result = CalculatorEngine.evaluate(
-                normalized, state.angleMode, lastResult, state.isEngMode, currentPrecision
+                normalized, state.angleMode, lastResult, state.isEngMode, currentPrecision,
+                state.variables,
             )
             val entry = CalculationEntry(
                 expression = normalized,
@@ -226,6 +260,67 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
             _state.update {
                 it.copy(error = e.message, result = "Error")
             }
+        }
+    }
+
+    /**
+     * Handles `name = expression` assignments (e.g. `rent = 1200`).
+     * Evaluates the RHS with currently stored variables, saves the result
+     * under [name], and shows `name = value` as confirmation.
+     */
+    private fun evaluateAssignment(state: CalculatorState, name: String, rhs: String) {
+        if (name in RESERVED_VARIABLE_NAMES) {
+            _state.update { it.copy(error = "$name is reserved", result = "Error") }
+            return
+        }
+        val normalizedRhs = CalculatorEngine.normalize(rhs.trim())
+        if (normalizedRhs.isEmpty()) {
+            _state.update { it.copy(error = "Syntax Error", result = "Error") }
+            return
+        }
+        try {
+            val value = CalculatorEngine.evaluate(
+                normalizedRhs, state.angleMode, state.lastResult, state.isEngMode,
+                currentPrecision, state.variables,
+            )
+            val numeric = value.replace('−', '-').toDoubleOrNull()
+            val updatedVariables = state.variables + (name to (numeric ?: 0.0))
+            val entry = CalculationEntry(
+                expression = "$name = $normalizedRhs",
+                result = value,
+            )
+            val updatedHistory = listOf(entry) + state.history
+
+            _state.update {
+                it.copy(
+                    expression = "$name = $value",
+                    result = "$name = $value",
+                    variables = updatedVariables,
+                    lastResult = numeric,
+                    lastOperand = null,
+                    lastOperator = null,
+                    history = updatedHistory,
+                    error = null,
+                    clearOnNextInput = true,
+                )
+            }
+            saveHistory()
+        } catch (e: Exception) {
+            _state.update {
+                it.copy(error = e.message, result = "Error")
+            }
+        }
+    }
+
+    /**
+     * Inserts a literal "=" for variable assignment (typed via ALPHA + "=")
+     * and exits ALPHA mode so digits can follow directly.
+     */
+    private fun insertAssignmentOperator() {
+        val current = _state.value
+        val expr = if (current.clearOnNextInput) "" else current.expression
+        _state.update {
+            it.copy(expression = "$expr=", clearOnNextInput = false, isAlphaMode = false)
         }
     }
 
@@ -342,7 +437,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
                         val base = CalculatorEngine.evaluate(
                             CalculatorEngine.normalize(baseExpr),
                             state.angleMode, state.lastResult, state.isEngMode,
-                            currentPrecision
+                            currentPrecision, state.variables,
                         ).toDoubleOrNull() ?: lastNum
                         "($baseExpr$lastOp$base×${match.groupValues[1]}÷100)"
                     } catch (_: Exception) {
@@ -490,9 +585,13 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
     // Utility
     private fun tryEval(expr: String): String {
         if (expr.isEmpty()) return "0"
+        if ('=' in expr) return _state.value.result // no live preview for assignments
         val normalized = CalculatorEngine.normalize(expr)
         return try {
-            CalculatorEngine.evaluate(normalized, _state.value.angleMode, _state.value.lastResult, _state.value.isEngMode, currentPrecision)
+            CalculatorEngine.evaluate(
+                normalized, _state.value.angleMode, _state.value.lastResult,
+                _state.value.isEngMode, currentPrecision, _state.value.variables,
+            )
         } catch (_: Exception) { _state.value.result }
     }
 }

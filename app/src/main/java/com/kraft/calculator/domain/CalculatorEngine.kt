@@ -44,12 +44,13 @@ object CalculatorEngine {
         lastResult: Double? = null,
         isEngMode: Boolean = false,
         precision: Int = 10,
+        variables: Map<String, Double> = emptyMap(),
     ): String {
         val trimmed = expression.trim()
         if (trimmed.isEmpty()) return "0"
 
         try {
-            val tokens = tokenize(trimmed, lastResult)
+            val tokens = tokenize(trimmed, lastResult, variables)
             if (tokens.isEmpty()) return "0"
 
             val rpn = shuntingYard(tokens)
@@ -86,7 +87,7 @@ object CalculatorEngine {
     // ---------------------------------------------------------------------------
     // Tokenization
     // ---------------------------------------------------------------------------
-    private fun tokenize(input: String, lastResult: Double?): List<Token> {
+    private fun tokenize(input: String, lastResult: Double?, variables: Map<String, Double> = emptyMap()): List<Token> {
         val tokens = mutableListOf<Token>()
         var i = 0
         val len = input.length
@@ -165,7 +166,8 @@ object CalculatorEngine {
             }
 
             // Identifiers
-            if (isLetter(ch)) {
+            if (isLetter(ch) || ch == '_') {
+                val wordStart = i
                 val ident = buildString {
                     while (i < len && isLetter(input[i])) { append(input[i]); i++ }
                     // Check for ⁻¹ suffix
@@ -222,11 +224,35 @@ object CalculatorEngine {
                     continue
                 }
 
+                // User variables (lowercase names, e.g. rent, tax_rate).
+                // Reserved function/constant names are matched above, so e.g.
+                // "sin2" still parses as sin(2) — only non-reserved identifiers
+                // fall through to the variables map here.
+                if (!ident.endsWith("⁻¹") &&
+                    (ident.isNotEmpty() && (ident[0] in 'a'..'z' || ident[0] == '_') ||
+                            ident.isEmpty() && wordStart < len && input[wordStart] == '_')
+                ) {
+                    i = wordStart
+                    val name = buildString {
+                        while (i < len && (input[i] in 'a'..'z' || input[i] in '0'..'9' || input[i] == '_')) {
+                            append(input[i]); i++
+                        }
+                    }
+                    val value = variables[name]
+                    if (value != null) {
+                        if (lastWasOperand()) tokens.add(Token(TokenType.BINARY_OP, "×", precedence = 3))
+                        tokens.add(Token(TokenType.NUMBER, name, value))
+                        continue
+                    }
+                }
+
                 throw CalculatorException("Unknown: $ident")
             }
 
-            // Minus — binary or unary
+            // Minus — binary or unary (accept both unicode − and hyphen -)
             if (ch == '−' || ch == '-') {
+                // Normalize hyphen to unicode minus for consistent handling
+                val minusOp = "−"
                 if (!lastWasOperand()) {
                     tokens.add(Token(TokenType.PREFIX_OP, "−"))
                 } else {
@@ -314,7 +340,14 @@ object CalculatorEngine {
 
         for (token in tokens) {
             when (token.type) {
-                TokenType.NUMBER -> output.add(token)
+                TokenType.NUMBER -> {
+                    output.add(token)
+                    // Prefix binds tighter than any binary: pop pending prefixes immediately
+                    // so "-5+3" becomes [5,neg,3,+] not [5,3+,neg]
+                    while (opStack.isNotEmpty() && opStack.last().type == TokenType.PREFIX_OP) {
+                        output.add(opStack.removeAt(opStack.lastIndex))
+                    }
+                }
                 TokenType.POSTFIX_OP -> output.add(token)
                 TokenType.PREFIX_OP -> opStack.add(token)
                 TokenType.BINARY_OP -> {
@@ -433,8 +466,8 @@ object CalculatorEngine {
                             stack.add(sqrt(a))
                         }
                         "∛" -> {
-                            if (a < 0) throw CalculatorException("Domain Error")
-                            stack.add(a.pow(1.0 / 3))
+                            // Real cube root handles negatives: ∛(-8) = -2
+                            stack.add(if (a < 0) -(-a).pow(1.0 / 3) else a.pow(1.0 / 3))
                         }
                         "sin" -> stack.add(sin(toRadians(a)))
                         "cos" -> stack.add(cos(toRadians(a)))
@@ -538,7 +571,9 @@ object CalculatorEngine {
         if (value == Double.NEGATIVE_INFINITY) return "−Infinity"
         if (value.isNaN()) return "Undefined"
 
-        val rounded = if (value.absoluteValue < 1e-12) 0.0 else value
+        // Don't zero small values here — let scientific branch handle them.
+        // Old code: abs < 1e-12 → 0.0 made scientific branch dead for tiny results.
+        val rounded = value
         val absValue = rounded.absoluteValue
 
         val formatted: String = when {

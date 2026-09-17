@@ -75,4 +75,6 @@ dependencies {
     implementation("androidx.room:room-ktx:2.7.2")
     ksp("androidx.room:room-compiler:2.7.2")
     implementation("androidx.glance:glance-appwidget:1.1.1")
+
+    testImplementation("junit:junit:4.13.2")
 }
