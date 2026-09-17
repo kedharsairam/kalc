@@ -18,6 +18,11 @@ android {
         versionName = "2.0.0"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
