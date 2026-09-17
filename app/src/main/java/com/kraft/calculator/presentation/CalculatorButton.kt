@@ -89,6 +89,8 @@ fun buttonFontWeight(style: CalculatorButtonStyle): FontWeight {
     }
 }
 
+val LocalHapticsEnabled = androidx.compose.runtime.staticCompositionLocalOf { true }
+
 /**
  * Maps symbol labels to spoken descriptions for accessibility.
  */
@@ -142,10 +144,13 @@ fun CalculatorButton(
     val fontWeight = buttonFontWeight(style)
 
     val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val hapticsEnabled = LocalHapticsEnabled.current
 
     Button(
         onClick = {
-            haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+            if (hapticsEnabled) {
+                haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+            }
             onClick()
         },
         modifier = modifier

@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,13 +35,24 @@ fun CalculatorScreen(
     colors: ThemeColors = if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light,
 ) {
     val state by viewModel.state.collectAsState()
+    val settings by viewModel.settings.collectAsState(initial = com.kraft.calculator.data.AppSettings())
     var showAbout by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showHistory by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     if (showAbout) {
         AboutScreen(onDismiss = { showAbout = false })
+    }
+
+    if (showSettings) {
+        SettingsScreen(
+            viewModel = viewModel,
+            onBack = { showSettings = false },
+            colors = colors,
+        )
+        return
     }
 
     if (showHistory) {
@@ -100,6 +112,13 @@ fun CalculatorScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showSettings = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Settings,
+                            contentDescription = "Settings",
+                            tint = colors.accentBlue,
+                        )
+                    }
                     IconButton(onClick = { showHistory = true }) {
                         Icon(
                             imageVector = Icons.Outlined.History,
@@ -143,22 +162,26 @@ fun CalculatorScreen(
                 snackbarHostState = snackbarHostState,
             )
 
-            // Keypad
-            when (state.mode) {
-                CalculatorMode.BASIC -> BasicKeypad(
-                    onButtonPressed = viewModel::onButtonPressed,
-                    colors = colors,
-                )
-                CalculatorMode.SCIENTIFIC -> ScientificKeypad(
-                    onButtonPressed = viewModel::onButtonPressed,
-                    angleMode = state.angleMode,
-                    isSecondMode = state.isSecondMode,
-                    isAlphaMode = state.isAlphaMode,
-                    isHypMode = state.isHypMode,
-                    isEngMode = state.isEngMode,
-                    isSDMode = state.isSDMode,
-                    colors = colors,
-                )
+            // Keypad (haptics provided via CompositionLocal)
+            androidx.compose.runtime.CompositionLocalProvider(
+                LocalHapticsEnabled provides settings.vibrationEnabled
+            ) {
+                when (state.mode) {
+                    CalculatorMode.BASIC -> BasicKeypad(
+                        onButtonPressed = viewModel::onButtonPressed,
+                        colors = colors,
+                    )
+                    CalculatorMode.SCIENTIFIC -> ScientificKeypad(
+                        onButtonPressed = viewModel::onButtonPressed,
+                        angleMode = state.angleMode,
+                        isSecondMode = state.isSecondMode,
+                        isAlphaMode = state.isAlphaMode,
+                        isHypMode = state.isHypMode,
+                        isEngMode = state.isEngMode,
+                        isSDMode = state.isSDMode,
+                        colors = colors,
+                    )
+                }
             }
         }
     }
