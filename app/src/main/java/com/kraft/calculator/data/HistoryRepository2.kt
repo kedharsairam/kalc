@@ -15,35 +15,53 @@ class RoomHistoryRepository(context: Context) {
     private val db = HistoryDatabase.get(appContext)
     private val dao = db.historyDao()
     private val legacy = HistoryRepository(appContext)
+    private val crypto by lazy { HistoryCrypto(appContext) }
 
     @Volatile
     private var migrated = false
 
     fun observe(limit: Int): Flow<List<CalculationEntry>> {
         return dao.observe(limit).map { entities ->
-            entities.map { CalculationEntry(it.expression, it.result, it.timestamp) }
+            entities.map {
+                CalculationEntry(
+                    crypto.decrypt(it.expression),
+                    crypto.decrypt(it.result),
+                    it.timestamp,
+                )
+            }
         }
     }
 
     suspend fun loadHistory(limit: Int = 100): List<CalculationEntry> {
         migrateIfNeeded(limit)
         return dao.getRecent(limit).map {
-            CalculationEntry(it.expression, it.result, it.timestamp)
+            CalculationEntry(
+                crypto.decrypt(it.expression),
+                crypto.decrypt(it.result),
+                it.timestamp,
+            )
         }
     }
 
     suspend fun saveEntry(expression: String, result: String, maxSize: Int = 100) {
         migrateIfNeeded(maxSize)
-        dao.insert(HistoryEntity(expression = expression, result = result))
+        dao.insert(
+            HistoryEntity(
+                expression = crypto.encrypt(expression),
+                result = crypto.encrypt(result),
+            )
+        )
         if (maxSize > 0) {
             dao.trimTo(maxSize)
         }
     }
 
     suspend fun deleteByExpression(expression: String, timestamp: Long) {
-        // Find by expression+timestamp since legacy entries lack stable IDs
+        // Decrypt-compare since DB stores encrypted values
         val all = dao.getRecent(500)
-        val match = all.firstOrNull { it.expression == expression && it.timestamp == timestamp }
+        val match = all.firstOrNull {
+            crypto.decrypt(it.expression) == expression && it.timestamp == timestamp
+        }
         match?.let { dao.deleteById(it.id) }
     }
 
@@ -63,8 +81,8 @@ class RoomHistoryRepository(context: Context) {
                 toKeep.forEach { entry ->
                     dao.insert(
                         HistoryEntity(
-                            expression = entry.expression,
-                            result = entry.result,
+                            expression = crypto.encrypt(entry.expression),
+                            result = crypto.encrypt(entry.result),
                             timestamp = entry.timestamp,
                         )
                     )
