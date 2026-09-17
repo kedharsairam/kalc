@@ -79,23 +79,9 @@ fun CalculatorDisplay(
             .padding(start = 20.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
         verticalArrangement = Arrangement.Bottom,
     ) {
-        // ── Zone 1: Badges (sci mode only, compact) ──
-        if (mode == CalculatorMode.SCIENTIFIC) {
-            BadgeRow(
-                isSecondMode = isSecondMode,
-                isAlphaMode = isAlphaMode,
-                isSDMode = isSDMode,
-                isDCMode = isDCMode,
-                isHypMode = isHypMode,
-                isEngMode = isEngMode,
-                memory = memory,
-                angleMode = angleMode,
-                colors = colors,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-        }
-
-        // ── Zone 2: Ticker tape (fills available space above, like Zeevy InlineTape) ──
+        // ── Zone 1: Ticker tape (fills available space above) ──
+        // Status badges (SHIFT/DEG/ENG/etc.) live ONLY in PreviewBar below.
+        // BadgeRow removed — was duplicating the same info twice.
         if (history.isNotEmpty()) {
             TickerTape(
                 history = history,
@@ -416,67 +402,4 @@ private fun HairlineDivider(colors: ThemeColors) {
             .padding(top = 2.dp)
             .background(colors.separator),
     )
-}
-
-// ─── Badge Row (scientific mode header) ────────────────────────────────────
-
-@Composable
-private fun BadgeRow(
-    isSecondMode: Boolean,
-    isAlphaMode: Boolean,
-    isSDMode: Boolean,
-    isDCMode: Boolean,
-    isHypMode: Boolean,
-    isEngMode: Boolean,
-    memory: Double,
-    angleMode: AngleMode,
-    colors: ThemeColors,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End,
-    ) {
-        if (isSecondMode) Badge("SHIFT", colors.accentOrange, if (isSystemInDarkTheme()) Color.Black else Color.White)
-        if (isAlphaMode) Badge("ALPHA", colors.accentRed, Color.White)
-        if (isSDMode) Badge("SD", colors.accentGreen, Color.White)
-        if (isDCMode) Badge("d/c", colors.accentGreen, Color.White)
-        if (isHypMode) Badge("HYP", colors.accentOrange, if (isSystemInDarkTheme()) Color.Black else Color.White)
-        if (memory != 0.0) Badge("M", colors.accentYellow, if (isSystemInDarkTheme()) Color.Black else Color.White)
-        Badge(
-            when (angleMode) {
-                AngleMode.DEGREE -> "DEG"
-                AngleMode.RADIAN -> "RAD"
-                AngleMode.GRAD -> "GRAD"
-            },
-            colors.surfaceTertiary,
-            colors.textTertiary,
-        )
-        if (isEngMode) Badge("ENG", colors.surfaceTertiary, colors.textTertiary)
-    }
-}
-
-@Composable
-private fun Badge(
-    label: String,
-    bg: Color,
-    fg: Color,
-) {
-    Box(
-        modifier = Modifier
-            .padding(end = 4.dp)
-            .background(
-                color = bg,
-                shape = RoundedCornerShape(KraftRadius.small / 2),
-            )
-            .padding(horizontal = 6.dp, vertical = 1.dp),
-    ) {
-        Text(
-            text = label,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = fg,
-            letterSpacing = 0.3.sp,
-        )
-    }
 }
