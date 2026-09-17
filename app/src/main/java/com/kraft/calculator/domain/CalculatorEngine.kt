@@ -40,7 +40,7 @@ object CalculatorEngine {
     // ---------------------------------------------------------------------------
     fun evaluate(
         expression: String,
-        isDegreeMode: Boolean = true,
+        angleMode: AngleMode = AngleMode.DEGREE,
         lastResult: Double? = null,
         isEngMode: Boolean = false,
     ): String {
@@ -52,7 +52,7 @@ object CalculatorEngine {
             if (tokens.isEmpty()) return "0"
 
             val rpn = shuntingYard(tokens)
-            val result = evaluateRpn(rpn, isDegreeMode)
+            val result = evaluateRpn(rpn, angleMode)
             return formatNumber(result, isEngMode)
         } catch (e: CalculatorException) {
             throw e
@@ -353,7 +353,17 @@ object CalculatorEngine {
     // ---------------------------------------------------------------------------
     // RPN Evaluation
     // ---------------------------------------------------------------------------
-    private fun evaluateRpn(rpn: List<Token>, isDegreeMode: Boolean): Double {
+    private fun evaluateRpn(rpn: List<Token>, angleMode: AngleMode): Double {
+        fun toRadians(a: Double): Double = when (angleMode) {
+            AngleMode.DEGREE -> a * PI / 180
+            AngleMode.RADIAN -> a
+            AngleMode.GRAD -> a * PI / 200
+        }
+        fun fromRadians(a: Double): Double = when (angleMode) {
+            AngleMode.DEGREE -> a * 180 / PI
+            AngleMode.RADIAN -> a
+            AngleMode.GRAD -> a * 200 / PI
+        }
         val stack = mutableListOf<Double>()
 
         for (token in rpn) {
@@ -425,32 +435,32 @@ object CalculatorEngine {
                             if (a < 0) throw CalculatorException("Domain Error")
                             stack.add(a.pow(1.0 / 3))
                         }
-                        "sin" -> stack.add(if (isDegreeMode) sin(a * PI / 180) else sin(a))
-                        "cos" -> stack.add(if (isDegreeMode) cos(a * PI / 180) else cos(a))
+                        "sin" -> stack.add(sin(toRadians(a)))
+                        "cos" -> stack.add(cos(toRadians(a)))
                         "tan" -> {
-                            val angle = if (isDegreeMode) a * PI / 180 else a
+                            val angle = toRadians(a)
                             if ((angle % PI - PI / 2).absoluteValue < 1e-12 && (angle % PI).absoluteValue > 1e-12)
                                 throw CalculatorException("Domain Error")
                             stack.add(tan(angle))
                         }
                         "asin" -> {
                             if (a < -1 || a > 1) throw CalculatorException("Domain Error")
-                            stack.add(if (isDegreeMode) asin(a) * 180 / PI else asin(a))
+                            stack.add(fromRadians(asin(a)))
                         }
                         "acos" -> {
                             if (a < -1 || a > 1) throw CalculatorException("Domain Error")
-                            stack.add(if (isDegreeMode) acos(a) * 180 / PI else acos(a))
+                            stack.add(fromRadians(acos(a)))
                         }
-                        "atan" -> stack.add(if (isDegreeMode) atan(a) * 180 / PI else atan(a))
+                        "atan" -> stack.add(fromRadians(atan(a)))
                         "sin⁻¹" -> {
                             if (a < -1 || a > 1) throw CalculatorException("Domain Error")
-                            stack.add(if (isDegreeMode) asin(a) * 180 / PI else asin(a))
+                            stack.add(fromRadians(asin(a)))
                         }
                         "cos⁻¹" -> {
                             if (a < -1 || a > 1) throw CalculatorException("Domain Error")
-                            stack.add(if (isDegreeMode) acos(a) * 180 / PI else acos(a))
+                            stack.add(fromRadians(acos(a)))
                         }
-                        "tan⁻¹" -> stack.add(if (isDegreeMode) atan(a) * 180 / PI else atan(a))
+                        "tan⁻¹" -> stack.add(fromRadians(atan(a)))
                         "ln" -> {
                             if (a <= 0) throw CalculatorException("Domain Error")
                             stack.add(ln(a))
