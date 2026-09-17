@@ -113,76 +113,97 @@ fun CalculatorDisplay(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            // Expression line (subordinate, muted, shrinks) — Zeevy pattern
-            // Long-press copies expression
-            val heroScroll = rememberScrollState()
-            LaunchedEffect(expression, result, error) {
-                heroScroll.scrollTo(heroScroll.maxValue)
-            }
-            // Auto-shrink expression based on length (24sp → 14sp floor)
-            val exprSize = remember(expression) {
-                when {
-                    expression.length > 30 -> 14.sp
-                    expression.length > 20 -> 18.sp
-                    expression.length > 12 -> 21.sp
-                    else -> 24.sp
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(heroScroll)
-                    .combinedClickable(
-                        onClick = {},
-                        onLongClick = {
-                            val text = if (expression.isNotEmpty()) expression else result
-                            if (text.isNotEmpty()) copyText(text, "expression")
-                        },
-                    ),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                Text(
-                    text = when {
-                        error != null -> error
-                        expression.isNotEmpty() -> expression
-                        else -> result
-                    },
-                    fontSize = exprSize,
-                    fontWeight = FontWeight.Normal,
-                    color = when {
-                        error != null -> colors.accentRed
-                        else -> colors.textSecondary
-                    },
-                    textAlign = TextAlign.End,
-                    maxLines = 2,
-                    softWrap = false,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            // Result line — HERO (57sp fixed, dominant) — Zeevy pattern
-            // Only show when numerically different from expression
-            // (compares values, not strings, so "123456" vs "123,456" doesn't duplicate)
-            // Long-press copies result
-            val showResult = remember(expression, result, error) {
-                if (expression.isEmpty() || error != null) false
+            // Determine display mode:
+            // - Typing a number (or empty): show it LARGE (no size jump)
+            // - Full expression with result: expression small + result hero
+            // - Error: show error medium red
+            val isSingleNumber = remember(expression, result) {
+                if (expression.isEmpty()) true
                 else {
-                    // Strip grouping separators and compare numerically
                     val cleanExpr = expression.replace(",", "").replace("−", "-")
                     val cleanResult = result.replace(",", "").replace("−", "-")
-                    // If expression is a single number equal to result, hide duplicate
                     val exprNum = cleanExpr.toDoubleOrNull()
                     val resNum = cleanResult.toDoubleOrNull()
-                    if (exprNum != null && resNum != null) {
-                        // Same value (within epsilon) = don't duplicate
-                        kotlin.math.abs(exprNum - resNum) > 1e-12
-                    } else {
-                        // Expression has operators, always show result
-                        cleanExpr != cleanResult
-                    }
+                    exprNum != null && resNum != null &&
+                        kotlin.math.abs(exprNum - resNum) <= 1e-12
                 }
             }
-            if (showResult) {
+
+            if (error != null) {
+                // Error state: medium red, single line
+                Text(
+                    text = error,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = colors.accentRed,
+                    textAlign = TextAlign.End,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else if (isSingleNumber) {
+                // Typing or empty: show current value LARGE (no jump when result appears)
+                val displayValue = if (expression.isNotEmpty()) expression else result
+                val largeScroll = rememberScrollState()
+                LaunchedEffect(displayValue) {
+                    largeScroll.scrollTo(largeScroll.maxValue)
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(largeScroll)
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = { if (displayValue.isNotEmpty()) copyText(displayValue, "value") },
+                        ),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Text(
+                        text = remember(displayValue) { formatWithGrouping(displayValue) },
+                        fontSize = 57.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.textPrimary,
+                        textAlign = TextAlign.End,
+                        maxLines = 2,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            } else {
+                // Full expression: small muted on top, hero result below
+                val heroScroll = rememberScrollState()
+                LaunchedEffect(expression) {
+                    heroScroll.scrollTo(heroScroll.maxValue)
+                }
+                val exprSize = remember(expression) {
+                    when {
+                        expression.length > 30 -> 14.sp
+                        expression.length > 20 -> 18.sp
+                        expression.length > 12 -> 21.sp
+                        else -> 24.sp
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(heroScroll)
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = { if (expression.isNotEmpty()) copyText(expression, "expression") },
+                        ),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Text(
+                        text = expression,
+                        fontSize = exprSize,
+                        fontWeight = FontWeight.Normal,
+                        color = colors.textSecondary,
+                        textAlign = TextAlign.End,
+                        maxLines = 2,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 Text(
                     text = remember(result) { formatWithGrouping(result) },
                     fontSize = 57.sp,
