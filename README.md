@@ -14,7 +14,9 @@ A clean, private calculator for Android. No ads. No analytics. No trackers.
 
 **Basic + Scientific** — Full expression parser with operator precedence, parentheses, and live preview. Switch between basic and scientific keypads with stable layout.
 
-**Scientific functions** — Trigonometry (sin/cos/tan + inverses + hyperbolic), logarithms (ln/log), exponentials, roots (√/∛/nth), powers, factorials, combinations (nCr/nPr), constants (π/e/τ), DMS degrees, fractions, engineering notation.
+**Scientific functions** — Trigonometry (sin/cos/tan + inverses + hyperbolic) in DEG/RAD/GRAD, logarithms (ln/log), exponentials, roots (√/∛/nth), powers, factorials, combinations (nCr/nPr), constants (π/e/τ), DMS degrees, fractions, engineering notation.
+
+**Variables** — Assign values like `rent = 1200`, then use `rent/3`. Math Notes style. Session-persistent.
 
 **Unit converter** — 9 categories: Length, Area, Volume, Mass, Temperature, Time, Speed, Pressure, Energy. Live conversion with swap.
 
@@ -37,7 +39,7 @@ A clean, private calculator for Android. No ads. No analytics. No trackers.
 | Database | Room (history) |
 | Preferences | DataStore |
 | Parser | Hand-written Shunting-Yard |
-| Tests | JUnit |
+| Tests | JUnit (67 engine tests, all passing) |
 
 ---
 
