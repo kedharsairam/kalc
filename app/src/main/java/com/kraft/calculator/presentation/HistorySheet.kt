@@ -186,7 +186,7 @@ private fun HistoryTile(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 14.dp),
-            horizontalAlignment = Alignment.End,
+            horizontalAlignment = Alignment.Start,
         ) {
             Text(
                 text = entry.expression,
@@ -195,7 +195,7 @@ private fun HistoryTile(
                 color = colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End,
+                textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(2.dp))
@@ -207,7 +207,7 @@ private fun HistoryTile(
                 color = colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End,
+                textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(2.dp))
@@ -215,7 +215,7 @@ private fun HistoryTile(
                 text = timeLabel,
                 fontSize = 12.sp,
                 color = colors.textTertiary,
-                textAlign = TextAlign.End,
+                textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
