@@ -141,8 +141,13 @@ fun CalculatorButton(
     val fontSize = buttonFontSize(style, largeFont).sp
     val fontWeight = buttonFontWeight(style)
 
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+
     Button(
-        onClick = onClick,
+        onClick = {
+            haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+            onClick()
+        },
         modifier = modifier
             .fillMaxSize()
             .defaultMinSize(minWidth = 44.dp, minHeight = 44.dp)

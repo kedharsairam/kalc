@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -37,6 +38,7 @@ import com.kraft.calculator.ui.theme.ThemeColors
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun CalculatorDisplay(
     expression: String,
@@ -59,6 +61,15 @@ fun CalculatorDisplay(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+    fun copyText(text: String, label: String) {
+        val clip = ClipData.newPlainText(label, text)
+        clipboard.setPrimaryClip(clip)
+        scope.launch {
+            snackbarHostState?.showSnackbar("Copied $label")
+        }
+    }
 
     Column(
         modifier = modifier
@@ -98,6 +109,7 @@ fun CalculatorDisplay(
         ) {
             // Hero: the current expression (or result if no expression)
             // Error shows ONLY here (not duplicated below)
+            // Long-press copies expression
             val heroScroll = rememberScrollState()
             LaunchedEffect(expression, result, error) {
                 heroScroll.scrollTo(heroScroll.maxValue)
@@ -105,7 +117,14 @@ fun CalculatorDisplay(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(heroScroll),
+                    .horizontalScroll(heroScroll)
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            val text = if (expression.isNotEmpty()) expression else result
+                            if (text.isNotEmpty()) copyText(text, "expression")
+                        },
+                    ),
                 horizontalArrangement = Arrangement.End,
             ) {
                 Text(
@@ -131,6 +150,7 @@ fun CalculatorDisplay(
             }
 
             // Result line — only when it differs from the hero expression
+            // Long-press copies result
             if (expression.isNotEmpty() && result != expression && error == null) {
                 Text(
                     text = remember(result) { formatWithGrouping(result) },
@@ -142,7 +162,11 @@ fun CalculatorDisplay(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 6.dp),
+                        .padding(top = 6.dp)
+                        .combinedClickable(
+                            onClick = {},
+                            onLongClick = { copyText(result, "result") },
+                        ),
                 )
             }
         }
