@@ -65,44 +65,6 @@ fun SettingsScreen(
                 )
             }
 
-            // Theme
-            SettingsSection(title = "Appearance") {
-                Text(
-                    text = "Theme",
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-                Column(Modifier.selectableGroup()) {
-                    AppTheme.entries.forEach { theme ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = settings.theme == theme,
-                                    onClick = { viewModel.setTheme(theme) },
-                                    role = Role.RadioButton,
-                                )
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = settings.theme == theme,
-                                onClick = null,
-                            )
-                            Spacer(Modifier.width(12.dp))
-                            Text(
-                                text = when (theme) {
-                                    AppTheme.SYSTEM -> "System default"
-                                    AppTheme.LIGHT -> "Light"
-                                    AppTheme.DARK -> "Dark"
-                                    AppTheme.AMOLED -> "AMOLED black"
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-
             // Precision
             SettingsSection(title = "Calculation") {
                 Text(
