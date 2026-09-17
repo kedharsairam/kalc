@@ -9,6 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -86,6 +89,44 @@ fun buttonFontWeight(style: CalculatorButtonStyle): FontWeight {
     }
 }
 
+/**
+ * Maps symbol labels to spoken descriptions for accessibility.
+ */
+fun buttonDescription(label: String): String = when (label) {
+    "⌫", "DEL" -> "Delete"
+    "±", "(−)" -> "Plus minus, toggle sign"
+    "÷" -> "Divide"
+    "×" -> "Multiply"
+    "−" -> "Minus"
+    "+" -> "Plus"
+    "=" -> "Equals"
+    "AC" -> "All clear"
+    "%" -> "Percent"
+    "√" -> "Square root"
+    "∛" -> "Cube root"
+    "π" -> "Pi"
+    "τ" -> "Tau"
+    "²" -> "Squared"
+    "³" -> "Cubed"
+    "⁻¹" -> "Reciprocal"
+    "!" -> "Factorial"
+    "^", "xʸ" -> "Power"
+    "S⇔D" -> "Toggle fraction decimal"
+    "DRG▶" -> "Cycle angle mode, degrees radians gradians"
+    "×10ˣ" -> "Scientific notation"
+    "a b/c" -> "Fraction"
+    "d/c" -> "Decimal to fraction"
+    "STO" -> "Store to memory"
+    "RCL" -> "Recall memory"
+    "SHIFT", "2nd" -> "Second function"
+    "HYP", "hyp" -> "Hyperbolic"
+    "ENG" -> "Engineering notation"
+    "Ans" -> "Last answer"
+    "sin⁻¹", "cos⁻¹", "tan⁻¹" -> "Inverse ${label.dropLast(2)}"
+    "sinh⁻¹", "cosh⁻¹", "tanh⁻¹" -> "Inverse hyperbolic ${label.dropLast(2)}"
+    else -> label
+}
+
 @Composable
 fun CalculatorButton(
     label: String,
@@ -104,7 +145,11 @@ fun CalculatorButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxSize()
-            .defaultMinSize(minWidth = 0.dp, minHeight = 0.dp),
+            .defaultMinSize(minWidth = 44.dp, minHeight = 44.dp)
+            .semantics {
+                contentDescription = buttonDescription(label)
+                if (isActive) selected = true
+            },
         shape = RoundedCornerShape(KraftRadius.standard),
         colors = ButtonDefaults.buttonColors(
             containerColor = bg,
