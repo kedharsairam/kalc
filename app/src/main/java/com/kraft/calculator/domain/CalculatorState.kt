@@ -16,6 +16,7 @@ data class CalculatorState(
     val isDCMode: Boolean = false,
     val isHypMode: Boolean = false,
     val memory: Double = 0.0,
+    val variables: Map<String, Double> = emptyMap(),
     val lastResult: Double? = null,
     val lastOperator: String? = null,
     val lastOperand: Double? = null,

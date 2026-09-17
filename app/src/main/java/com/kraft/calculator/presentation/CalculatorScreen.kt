@@ -153,6 +153,7 @@ fun CalculatorScreen(
                 mode = state.mode,
                 history = state.history,
                 lastResult = state.lastResult,
+                variables = state.variables,
                 isSecondMode = state.isSecondMode,
                 isAlphaMode = state.isAlphaMode,
                 isHypMode = state.isHypMode,

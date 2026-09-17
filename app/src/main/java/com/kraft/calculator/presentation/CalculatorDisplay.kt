@@ -48,6 +48,7 @@ fun CalculatorDisplay(
     mode: CalculatorMode = CalculatorMode.BASIC,
     history: List<CalculationEntry> = emptyList(),
     lastResult: Double? = null,
+    variables: Map<String, Double> = emptyMap(),
     isSecondMode: Boolean = false,
     isAlphaMode: Boolean = false,
     isEngMode: Boolean = false,
@@ -215,6 +216,7 @@ fun CalculatorDisplay(
             expression = expression,
             result = result,
             lastResult = lastResult,
+            variables = variables,
             memory = memory,
             angleMode = angleMode,
             mode = mode,
@@ -275,6 +277,7 @@ private fun PreviewBar(
     expression: String,
     result: String,
     lastResult: Double?,
+    variables: Map<String, Double> = emptyMap(),
     memory: Double,
     angleMode: AngleMode,
     mode: CalculatorMode,
@@ -303,6 +306,22 @@ private fun PreviewBar(
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Medium,
                     color = colors.textTertiary,
+                )
+            }
+            // Subtle indicator for stored variables (up to 3, e.g. "rent=1200 · tax=5")
+            if (variables.isNotEmpty()) {
+                val summary = remember(variables) {
+                    variables.entries.take(3)
+                        .joinToString(" · ") { "${it.key}=${formatAns(it.value)}" }
+                }
+                Text(
+                    text = if (showAns) "  $summary" else summary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = colors.textTertiary,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
