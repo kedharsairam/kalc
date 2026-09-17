@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,6 +49,7 @@ fun CalculatorScreen(
     val colors = resolvedColors
     var showAbout by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+    var showConverter by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showHistory by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -60,6 +62,14 @@ fun CalculatorScreen(
         SettingsScreen(
             viewModel = viewModel,
             onBack = { showSettings = false },
+            colors = colors,
+        )
+        return
+    }
+
+    if (showConverter) {
+        ConverterScreen(
+            onBack = { showConverter = false },
             colors = colors,
         )
         return
@@ -122,6 +132,13 @@ fun CalculatorScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showConverter = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.SwapHoriz,
+                            contentDescription = "Unit converter",
+                            tint = colors.accentBlue,
+                        )
+                    }
                     IconButton(onClick = { showSettings = true }) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
