@@ -97,7 +97,7 @@ fun SettingsScreen(
             SettingsSection(title = "About") {
                 ListItem(
                     headlineContent = { Text("Version") },
-                    supportingContent = { Text("1.0.1") },
+                    supportingContent = { Text(com.kraft.calculator.BuildConfig.VERSION_NAME) },
                 )
                 ListItem(
                     headlineContent = { Text("Source code") },
