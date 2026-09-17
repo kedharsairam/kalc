@@ -43,6 +43,7 @@ object CalculatorEngine {
         angleMode: AngleMode = AngleMode.DEGREE,
         lastResult: Double? = null,
         isEngMode: Boolean = false,
+        precision: Int = 10,
     ): String {
         val trimmed = expression.trim()
         if (trimmed.isEmpty()) return "0"
@@ -53,7 +54,7 @@ object CalculatorEngine {
 
             val rpn = shuntingYard(tokens)
             val result = evaluateRpn(rpn, angleMode)
-            return formatNumber(result, isEngMode)
+            return formatNumber(result, isEngMode, precision.coerceIn(2, 15))
         } catch (e: CalculatorException) {
             throw e
         } catch (e: Exception) {
@@ -532,7 +533,7 @@ object CalculatorEngine {
         return result
     }
 
-    private fun formatNumber(value: Double, isEngMode: Boolean): String {
+    private fun formatNumber(value: Double, isEngMode: Boolean, precision: Int = 10): String {
         if (value == Double.POSITIVE_INFINITY) return "Infinity"
         if (value == Double.NEGATIVE_INFINITY) return "−Infinity"
         if (value.isNaN()) return "Undefined"
@@ -561,7 +562,7 @@ object CalculatorEngine {
                 if (rounded == rounded.roundToInt().toDouble()) {
                     rounded.toInt().toString()
                 } else {
-                    trimTrailingZeros(String.format("%.10f", rounded).replace(',', '.'))
+                    trimTrailingZeros(String.format(java.util.Locale.US, "%.${precision}f", rounded).replace(',', '.'))
                 }
             }
         }
