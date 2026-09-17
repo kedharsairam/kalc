@@ -161,8 +161,28 @@ fun CalculatorDisplay(
             }
 
             // Result line — HERO (57sp fixed, dominant) — Zeevy pattern
+            // Only show when numerically different from expression
+            // (compares values, not strings, so "123456" vs "123,456" doesn't duplicate)
             // Long-press copies result
-            if (expression.isNotEmpty() && result != expression && error == null) {
+            val showResult = remember(expression, result, error) {
+                if (expression.isEmpty() || error != null) false
+                else {
+                    // Strip grouping separators and compare numerically
+                    val cleanExpr = expression.replace(",", "").replace("−", "-")
+                    val cleanResult = result.replace(",", "").replace("−", "-")
+                    // If expression is a single number equal to result, hide duplicate
+                    val exprNum = cleanExpr.toDoubleOrNull()
+                    val resNum = cleanResult.toDoubleOrNull()
+                    if (exprNum != null && resNum != null) {
+                        // Same value (within epsilon) = don't duplicate
+                        kotlin.math.abs(exprNum - resNum) > 1e-12
+                    } else {
+                        // Expression has operators, always show result
+                        cleanExpr != cleanResult
+                    }
+                }
+            }
+            if (showResult) {
                 Text(
                     text = remember(result) { formatWithGrouping(result) },
                     fontSize = 57.sp,
