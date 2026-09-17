@@ -12,6 +12,7 @@ import java.util.UUID
 @Entity(tableName = "history")
 data class HistoryEntity(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    // Encrypted with HistoryCrypto (AES-256-GCM). "plain:" prefix = legacy unencrypted.
     val expression: String,
     val result: String,
     val timestamp: Long = System.currentTimeMillis(),
