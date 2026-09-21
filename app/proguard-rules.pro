@@ -1,2 +1,3 @@
--keep class io.flutter.** { *; }
--dontwarn io.flutter.**
+# Kalc ProGuard Rules
+# No reflection-intensive libraries — keep rules minimal.
+# Room and DataStore are handled by their runtime dependencies.

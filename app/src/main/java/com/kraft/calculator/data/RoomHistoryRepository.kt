@@ -73,6 +73,7 @@ class RoomHistoryRepository(context: Context) {
         if (migrated) return
         synchronized(this) {
             if (migrated) return
+            migrated = true
         }
         try {
             if (dao.count() == 0) {

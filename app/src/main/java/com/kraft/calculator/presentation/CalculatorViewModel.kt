@@ -39,6 +39,8 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
     @Volatile
     private var currentPrecision: Int = 10
+    @Volatile
+    private var currentHistorySize: Int = 50
 
     private val _state = MutableStateFlow(CalculatorState())
     val state: StateFlow<CalculatorState> = _state.asStateFlow()
@@ -54,6 +56,7 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             settingsRepo.settings.collect { prefs ->
                 currentPrecision = prefs.decimalPrecision
+                currentHistorySize = prefs.historySize
                 // Trim history if size reduced
                 if (prefs.historySize > 0) {
                     try {
@@ -549,12 +552,10 @@ class CalculatorViewModel(application: Application) : AndroidViewModel(applicati
 
     // History (Room-backed with stable IDs)
     private fun saveHistory() {
-        // Persist latest entry to Room (state already updated optimistically)
         viewModelScope.launch {
             try {
                 val latest = _state.value.history.firstOrNull() ?: return@launch
-                // Get max size from settings (default 100)
-                historyRepo.saveEntry(latest.expression, latest.result, 100)
+                historyRepo.saveEntry(latest.expression, latest.result, currentHistorySize)
             } catch (_: Exception) { }
         }
     }
