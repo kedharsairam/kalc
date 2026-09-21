@@ -26,6 +26,7 @@ import com.kraft.calculator.domain.CalculatorMode
 import com.kraft.calculator.ui.theme.KraftRadius
 import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.ThemeColors
+import com.kraft.calculator.data.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,8 +37,13 @@ fun CalculatorScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val settings by viewModel.settings.collectAsState(initial = com.kraft.calculator.data.AppSettings())
-    // Dark theme only — no theme picker
-    val colors = KraftThemeColors.dark
+    // Theme resolved from settings (SYSTEM → follows system dark mode)
+    val activeColors: ThemeColors = when (settings.theme) {
+        AppTheme.SYSTEM -> if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light
+        AppTheme.LIGHT -> KraftThemeColors.light
+        AppTheme.DARK -> KraftThemeColors.dark
+        AppTheme.AMOLED -> KraftThemeColors.amoledGrey
+    }
     var showSettings by remember { mutableStateOf(false) }
     var showConverter by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -48,7 +54,7 @@ fun CalculatorScreen(
         SettingsScreen(
             viewModel = viewModel,
             onBack = { showSettings = false },
-            colors = colors,
+            colors = activeColors,
         )
         return
     }
@@ -56,7 +62,7 @@ fun CalculatorScreen(
     if (showConverter) {
         ConverterScreen(
             onBack = { showConverter = false },
-            colors = colors,
+            colors = activeColors,
         )
         return
     }
@@ -65,7 +71,7 @@ fun CalculatorScreen(
         ModalBottomSheet(
             onDismissRequest = { showHistory = false },
             sheetState = sheetState,
-            containerColor = colors.background,
+            containerColor = activeColors.background,
             shape = RoundedCornerShape(topStart = KraftRadius.large, topEnd = KraftRadius.large),
             dragHandle = {
                 Box(
@@ -74,7 +80,7 @@ fun CalculatorScreen(
                         .width(36.dp)
                         .height(6.dp)
                         .background(
-                            color = colors.textPrimary.copy(alpha = 0.2f),
+                            color = activeColors.textPrimary.copy(alpha = 0.2f),
                             shape = RoundedCornerShape(3.dp),
                         ),
                 )
@@ -88,7 +94,7 @@ fun CalculatorScreen(
                     viewModel.loadExpression(entry.expression)
                     showHistory = false
                 },
-                colors = colors,
+                colors = activeColors,
             )
         }
     }
@@ -104,7 +110,7 @@ fun CalculatorScreen(
                         ModePill(
                             currentMode = state.mode,
                             onModeChange = { viewModel.onButtonPressed("MODE") },
-                            colors = colors,
+                            colors = activeColors,
                         )
                     }
                 },
@@ -113,30 +119,30 @@ fun CalculatorScreen(
                         Icon(
                             imageVector = Icons.Outlined.SwapHoriz,
                             contentDescription = "Unit converter",
-                            tint = colors.accentBlue,
+                            tint = activeColors.accentBlue,
                         )
                     }
                     IconButton(onClick = { showSettings = true }) {
                         Icon(
                             imageVector = Icons.Outlined.Settings,
                             contentDescription = "Settings",
-                            tint = colors.accentBlue,
+                            tint = activeColors.accentBlue,
                         )
                     }
                     IconButton(onClick = { showHistory = true }) {
                         Icon(
                             imageVector = Icons.Outlined.History,
                             contentDescription = "History",
-                            tint = colors.accentBlue,
+                            tint = activeColors.accentBlue,
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background.copy(alpha = 0.85f),
+                    containerColor = activeColors.background.copy(alpha = 0.85f),
                 ),
             )
         },
-        containerColor = colors.background,
+        containerColor = activeColors.background,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         modifier = modifier,
     ) { padding ->
@@ -145,7 +151,6 @@ fun CalculatorScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            // Display area (fills remaining space)
             CalculatorDisplay(
                 expression = state.expression,
                 result = state.result,
@@ -163,18 +168,17 @@ fun CalculatorScreen(
                 memory = state.memory,
                 angleMode = state.angleMode,
                 modifier = Modifier.weight(1f),
-                colors = colors,
+                colors = activeColors,
                 snackbarHostState = snackbarHostState,
             )
 
-            // Keypad (haptics provided via CompositionLocal)
             androidx.compose.runtime.CompositionLocalProvider(
                 LocalHapticsEnabled provides settings.vibrationEnabled
             ) {
                 when (state.mode) {
                     CalculatorMode.BASIC -> BasicKeypad(
                         onButtonPressed = viewModel::onButtonPressed,
-                        colors = colors,
+                        colors = activeColors,
                     )
                     CalculatorMode.SCIENTIFIC -> ScientificKeypad(
                         onButtonPressed = viewModel::onButtonPressed,
@@ -184,7 +188,7 @@ fun CalculatorScreen(
                         isHypMode = state.isHypMode,
                         isEngMode = state.isEngMode,
                         isSDMode = state.isSDMode,
-                        colors = colors,
+                        colors = activeColors,
                     )
                 }
             }

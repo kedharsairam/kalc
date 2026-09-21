@@ -48,10 +48,10 @@ private fun BasicRow(
     colors: ThemeColors,
 ) {
     fun style(label: String) = when (label) {
-        "⌫", "AC", "%", "±" -> CalculatorButtonStyle.utility
-        "÷", "×", "−", "+" -> CalculatorButtonStyle.operator
-        "=" -> CalculatorButtonStyle.equals
-        else -> CalculatorButtonStyle.number
+        "⌫", "AC", "%", "±" -> CalculatorButtonStyle.UTILITY
+        "÷", "×", "−", "+" -> CalculatorButtonStyle.OPERATOR
+        "=" -> CalculatorButtonStyle.EQUALS
+        else -> CalculatorButtonStyle.NUMBER
     }
 
     Row(

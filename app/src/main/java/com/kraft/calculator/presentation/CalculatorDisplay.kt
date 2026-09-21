@@ -3,6 +3,7 @@ package com.kraft.calculator.presentation
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -16,30 +17,43 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
-import java.text.DecimalFormat
-import java.text.DecimalFormatSymbols
-import java.util.Locale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kraft.calculator.domain.AngleMode
 import com.kraft.calculator.domain.CalculationEntry
 import com.kraft.calculator.domain.CalculatorMode
+import com.kraft.calculator.ui.theme.KraftFontSizes
 import com.kraft.calculator.ui.theme.KraftRadius
+import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.ThemeColors
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
 
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+/**
+ * The calculator's main display area.
+ *
+ * Shows three zones stacked vertically:
+ * 1. Ticker tape — last 2 entries in compact form (when history is non-empty).
+ * 2. Main display — either a single large number (typing/empty state) or
+ *    an expression line + hero result (full expression state).
+ * 3. Preview bar — contextual info: Ans value, stored variables, mode badges.
+ *
+ * All sizing uses [KraftSpacing] for layout and [DisplayFontSizes] / [KraftFontSizes]
+ * for typography. No magic numbers.
+ */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CalculatorDisplay(
     expression: String,
@@ -65,6 +79,7 @@ fun CalculatorDisplay(
     val scope = rememberCoroutineScope()
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
+    /** Copies [text] to clipboard and shows a snackbar confirmation. */
     fun copyText(text: String, label: String) {
         val clip = ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
@@ -76,34 +91,37 @@ fun CalculatorDisplay(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 180.dp)
-            .padding(start = 20.dp, end = 16.dp, top = 8.dp, bottom = 8.dp),
+            .defaultMinSize(minHeight = DisplayMinHeight.minHeight)
+            .padding(
+                start = KraftSpacing.spacing20,
+                end = KraftSpacing.spacing16,
+                top = KraftSpacing.spacing8,
+                bottom = KraftSpacing.spacing8,
+            ),
         verticalArrangement = Arrangement.Bottom,
     ) {
-        // ── Zone 1: Ticker tape (fills available space above) ──
-        // Status badges (SHIFT/DEG/ENG/etc.) live ONLY in PreviewBar below.
-        // BadgeRow removed — was duplicating the same info twice.
+        // ── Ticker tape ──────────────────────────────────────────────────────
+        // Last 2 calculation entries in compact form.
+        // (A separate BadgeRow was removed — it duplicated this information.)
         if (history.isNotEmpty()) {
             TickerTape(
                 history = history,
                 colors = colors,
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .padding(bottom = 4.dp),
+                    .padding(bottom = KraftSpacing.spacing4),
             )
         } else {
             Spacer(Modifier.weight(1f, fill = false))
         }
 
-        // ── Zone 3: Fixed 2-line display (bottom-anchored, never shifts) ──
+        // ── Main display ──────────────────────────────────────────────────────
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            // Determine display mode:
-            // - Typing a number (or empty): show it LARGE (no size jump)
-            // - Full expression with result: expression small + result hero
-            // - Error: show error medium red
+            // Single large number when typing or empty — no size jump when result appears.
+            // Full expression shown as small muted line + hero result below.
             val isSingleNumber = remember(expression, result) {
                 if (expression.isEmpty()) true
                 else {
@@ -117,10 +135,10 @@ fun CalculatorDisplay(
             }
 
             if (error != null) {
-                // Error state: medium red, single line
+                // Error state — single line, title-1 size, red.
                 Text(
                     text = error,
-                    fontSize = 28.sp,
+                    fontSize = KraftFontSizes.title1,
                     fontWeight = FontWeight.Medium,
                     color = colors.accentRed,
                     textAlign = TextAlign.End,
@@ -129,7 +147,7 @@ fun CalculatorDisplay(
                     modifier = Modifier.fillMaxWidth(),
                 )
             } else if (isSingleNumber) {
-                // Typing or empty: show current value LARGE (no jump when result appears)
+                // Typing/empty: show current value large, right-aligned, scrollable.
                 val displayValue = if (expression.isNotEmpty()) expression else result
                 val largeScroll = rememberScrollState()
                 LaunchedEffect(displayValue) {
@@ -147,7 +165,7 @@ fun CalculatorDisplay(
                 ) {
                     Text(
                         text = remember(displayValue) { formatWithGrouping(displayValue) },
-                        fontSize = 57.sp,
+                        fontSize = DisplayFontSizes.heroResult,
                         fontWeight = FontWeight.Bold,
                         color = colors.textPrimary,
                         textAlign = TextAlign.End,
@@ -157,17 +175,17 @@ fun CalculatorDisplay(
                     )
                 }
             } else {
-                // Full expression: small muted on top, hero result below
+                // Full expression: adaptive-size expression line + hero result below.
                 val heroScroll = rememberScrollState()
                 LaunchedEffect(expression) {
                     heroScroll.scrollTo(heroScroll.maxValue)
                 }
                 val exprSize = remember(expression) {
                     when {
-                        expression.length > 30 -> 14.sp
-                        expression.length > 20 -> 18.sp
-                        expression.length > 12 -> 21.sp
-                        else -> 24.sp
+                        expression.length > 30 -> DisplayFontSizes.expressionVeryLong
+                        expression.length > 20 -> DisplayFontSizes.expressionLong
+                        expression.length > 12 -> DisplayFontSizes.expressionMedium
+                        else -> DisplayFontSizes.expressionShort
                     }
                 }
                 Row(
@@ -193,16 +211,16 @@ fun CalculatorDisplay(
                 }
                 Text(
                     text = remember(result) { formatWithGrouping(result) },
-                    fontSize = 57.sp,
+                    fontSize = DisplayFontSizes.heroResult,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    fontFamily = FontFamily.Monospace,
                     color = colors.textPrimary,
                     textAlign = TextAlign.End,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 6.dp)
+                        .padding(top = KraftSpacing.spacing6)
                         .combinedClickable(
                             onClick = {},
                             onLongClick = { copyText(result, "result") },
@@ -211,7 +229,9 @@ fun CalculatorDisplay(
             }
         }
 
-        // ── Zone 3: Preview / status bar ──
+        // ── Preview / status bar ──────────────────────────────────────────────
+        // Left: Ans value + stored variable summary.
+        // Right: mode/status badges (DEG, SHIFT, ALPHA, HYP, ENG, SD, d/c, M).
         PreviewBar(
             expression = expression,
             result = result,
@@ -229,15 +249,32 @@ fun CalculatorDisplay(
             colors = colors,
         )
 
-        // ── Zone 4: Divider ──
+        // ── Divider ───────────────────────────────────────────────────────────
         HairlineDivider(colors)
     }
 }
 
-// ─── Ticker Tape ───────────────────────────────────────────────────────────
-// Shows the last 2 calculation entries in compact format.
-// Each entry: "expression = result"
+// ─── Display font sizes ──────────────────────────────────────────────────────
+// Calculator-display-specific type scale.
+// The hero result (57sp) is intentionally larger than the standard KraftTypography
+// scale — it is the primary read-out element, not body text.
+// Expression sizes are adaptive: shorter expressions render larger for visual weight.
+object DisplayFontSizes {
+    val heroResult = 57.sp
+    val expressionShort = 24.sp
+    val expressionMedium = 21.sp
+    val expressionLong = 18.sp
+    val expressionVeryLong = 14.sp
+    val badge = 10.sp
+}
 
+/** Minimum height for the display column. Ensures the display area never collapses. */
+object DisplayMinHeight {
+    val minHeight = 180.dp
+}
+
+// ─── Ticker tape ─────────────────────────────────────────────────────────────
+/** Last 2 calculation entries, compact right-aligned format. */
 @Composable
 private fun TickerTape(
     history: List<CalculationEntry>,
@@ -245,33 +282,29 @@ private fun TickerTape(
     modifier: Modifier = Modifier,
 ) {
     val entries = history.take(2)
-
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 2.dp),
+            .padding(top = KraftSpacing.spacing2),
         horizontalAlignment = Alignment.End,
     ) {
         entries.reversed().forEach { entry ->
             Text(
                 text = "${entry.expression} = ${entry.result}",
-                fontSize = 12.sp,
+                fontSize = KraftFontSizes.caption1,
                 fontWeight = FontWeight.Normal,
                 color = colors.textTertiary,
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 softWrap = false,
-                modifier = Modifier.padding(vertical = 1.dp),
+                modifier = Modifier.padding(vertical = KraftSpacing.spacing1),
             )
         }
     }
 }
 
-// ─── Preview / Status Bar ──────────────────────────────────────────────────
-// Shows contextual info in a thin strip:
-//   Left: "Ans: X" when lastResult is defined
-//   Right: active badges (sci mode), memory indicator
-
+// ─── Preview / status bar ────────────────────────────────────────────────────
+/** Contextual info strip: Ans + variable summary (left), mode badges (right). */
 @Composable
 private fun PreviewBar(
     expression: String,
@@ -294,7 +327,7 @@ private fun PreviewBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp, bottom = 2.dp),
+            .padding(top = KraftSpacing.spacing4, bottom = KraftSpacing.spacing2),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -303,12 +336,12 @@ private fun PreviewBar(
             if (showAns) {
                 Text(
                     text = "Ans: ${formatAns(lastResult!!)}",
-                    fontSize = 11.sp,
+                    fontSize = KraftFontSizes.caption2,
                     fontWeight = FontWeight.Medium,
                     color = colors.textTertiary,
                 )
             }
-            // Subtle indicator for stored variables (up to 3, e.g. "rent=1200 · tax=5")
+            // Stored variable summary (up to 3, e.g. "rent=1200 · tax=5")
             if (variables.isNotEmpty()) {
                 val summary = remember(variables) {
                     variables.entries.take(3)
@@ -316,7 +349,7 @@ private fun PreviewBar(
                 }
                 Text(
                     text = if (showAns) "  $summary" else summary,
-                    fontSize = 11.sp,
+                    fontSize = KraftFontSizes.caption2,
                     fontWeight = FontWeight.Normal,
                     color = colors.textTertiary,
                     maxLines = 1,
@@ -327,12 +360,10 @@ private fun PreviewBar(
         }
 
         // Right: status badges
-        // Text colors fixed for contrast on accent backgrounds (not theme-dependent)
         Row(horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
             if (memory != 0.0) {
-                MiniBadge("M", colors.accentYellow, Color.Black)
+                MiniBadge("M", colors.accentYellow, androidx.compose.ui.graphics.Color.Black)
             }
-
             if (mode == CalculatorMode.SCIENTIFIC) {
                 MiniBadge(
                     when (angleMode) {
@@ -343,31 +374,33 @@ private fun PreviewBar(
                     colors.surfaceTertiary,
                     colors.textTertiary,
                 )
-                if (isSecondMode) MiniBadge("SHIFT", colors.accentOrange, Color.Black)
-                if (isAlphaMode) MiniBadge("ALPHA", colors.accentRed, Color.White)
-                if (isHypMode) MiniBadge("HYP", colors.accentOrange, Color.Black)
+                if (isSecondMode) MiniBadge("SHIFT", colors.accentOrange, androidx.compose.ui.graphics.Color.Black)
+                if (isAlphaMode) MiniBadge("ALPHA", colors.accentRed, androidx.compose.ui.graphics.Color.White)
+                if (isHypMode) MiniBadge("HYP", colors.accentOrange, androidx.compose.ui.graphics.Color.Black)
                 if (isEngMode) MiniBadge("ENG", colors.surfaceTertiary, colors.textTertiary)
-                if (isSDMode) MiniBadge("SD", colors.accentGreen, Color.Black)
-                if (isDCMode) MiniBadge("d/c", colors.accentGreen, Color.Black)
+                if (isSDMode) MiniBadge("SD", colors.accentGreen, androidx.compose.ui.graphics.Color.Black)
+                if (isDCMode) MiniBadge("d/c", colors.accentGreen, androidx.compose.ui.graphics.Color.Black)
             }
         }
     }
 }
 
+// ─── Mini badge ──────────────────────────────────────────────────────────────
+/** Small pill badge for status indicators (M, DEG, SHIFT, ALPHA, etc.). */
 @Composable
-private fun MiniBadge(label: String, bg: Color, fg: Color) {
+private fun MiniBadge(label: String, bg: androidx.compose.ui.graphics.Color, fg: androidx.compose.ui.graphics.Color) {
     Box(
         modifier = Modifier
-            .padding(start = 4.dp)
+            .padding(start = KraftSpacing.spacing4)
             .background(
                 color = bg,
-                shape = RoundedCornerShape(KraftRadius.small / 2),
+                shape = RoundedCornerShape(KraftRadius.tiny),
             )
-            .padding(horizontal = 5.dp, vertical = 1.dp),
+            .padding(horizontal = KraftSpacing.spacing4, vertical = KraftSpacing.spacing2),
     ) {
         Text(
             text = label,
-            fontSize = 10.sp,
+            fontSize = DisplayFontSizes.badge,
             fontWeight = FontWeight.SemiBold,
             color = fg,
             letterSpacing = 0.3.sp,
@@ -375,26 +408,26 @@ private fun MiniBadge(label: String, bg: Color, fg: Color) {
     }
 }
 
+// ─── Formatting helpers ──────────────────────────────────────────────────────
+
 /**
  * Adds thousand separators to a numeric string for display.
+ *
  * Only formats pure numbers (not expressions). Uses locale grouping.
  * Engine output stays clean for parsing; this is display-layer only.
  */
 fun formatWithGrouping(value: String): String {
-    // Only format if it's a pure number (optional minus, digits, optional decimal)
     if (!value.matches(Regex("""^−?\d+(\.\d+)?$"""))) return value
     try {
         val isNegative = value.startsWith("−")
         val abs = if (isNegative) value.drop(1) else value
         val parts = abs.split(".")
         val intPart = parts[0].toLongOrNull() ?: return value
-        // Don't group small numbers
         if (intPart < 1000) return value
         val symbols = DecimalFormatSymbols(Locale.getDefault())
         val df = DecimalFormat("#,###", symbols)
         df.isGroupingUsed = true
         val grouped = df.format(intPart)
-        // Normalize minus sign
         val result = if (parts.size > 1) "$grouped.${parts[1]}" else grouped
         return if (isNegative) "−$result" else result
     } catch (_: Exception) {
@@ -402,25 +435,26 @@ fun formatWithGrouping(value: String): String {
     }
 }
 
+/** Formats a [Double] for the Ans preview: integers as-is, otherwise up to 4 decimals. */
 private fun formatAns(value: Double): String {
     return if (value == value.roundToInt().toDouble()) {
         value.toInt().toString()
     } else {
-        // Show up to 4 decimal places, strip trailing zeros
         val formatted = String.format(Locale.US, "%.4f", value).trimEnd('0')
         formatted.trimEnd('.')
     }
 }
 
-// ─── Divider ───────────────────────────────────────────────────────────────
+// ─── Divider ─────────────────────────────────────────────────────────────────
 
+/** Hairline separator between the display and the preview bar. */
 @Composable
 private fun HairlineDivider(colors: ThemeColors) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(1.dp)
-            .padding(top = 2.dp)
+            .height(KraftSpacing.spacing1)
+            .padding(top = KraftSpacing.spacing2)
             .background(colors.separator),
     )
 }

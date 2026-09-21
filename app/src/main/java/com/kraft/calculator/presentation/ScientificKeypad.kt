@@ -17,7 +17,7 @@ private data class SciKey(
     val alpha: String? = null,
     val action: String? = null,
     val shiftedAction: String? = null,
-    val style: CalculatorButtonStyle = CalculatorButtonStyle.scientific,
+    val style: CalculatorButtonStyle = CalculatorButtonStyle.SCIENTIFIC,
     val isToggle: Boolean = false,
 ) {
     fun label(isSecond: Boolean, isAlpha: Boolean): String {
@@ -33,8 +33,8 @@ private data class SciKey(
     }
 
     fun resolveStyle(isSecond: Boolean, isAlpha: Boolean): CalculatorButtonStyle {
-        if (isAlpha && alpha != null) return CalculatorButtonStyle.alpha
-        if (isSecond && shifted != null) return CalculatorButtonStyle.shiftSci
+        if (isAlpha && alpha != null) return CalculatorButtonStyle.ALPHA
+        if (isSecond && shifted != null) return CalculatorButtonStyle.SHIFT_SCI
         return style
     }
 }
@@ -44,14 +44,14 @@ private val keyRows = listOf(
         SciKey("sin", shifted = "sin⁻¹", alpha = "A"),
         SciKey("cos", shifted = "cos⁻¹", alpha = "B"),
         SciKey("tan", shifted = "tan⁻¹", alpha = "C"),
-        SciKey("(", alpha = "D", style = CalculatorButtonStyle.utility),
-        SciKey(")", alpha = "E", style = CalculatorButtonStyle.utility),
+        SciKey("(", alpha = "D", style = CalculatorButtonStyle.UTILITY),
+        SciKey(")", alpha = "E", style = CalculatorButtonStyle.UTILITY),
     ),
     listOf(
         SciKey("S⇔D", alpha = "F", isToggle = true),
         SciKey("log", shifted = "10^", shiftedAction = "10^", alpha = "G"),
         SciKey("ln", shifted = "e^", shiftedAction = "e^", alpha = "H"),
-        SciKey("(−)", alpha = "I", style = CalculatorButtonStyle.utility),
+        SciKey("(−)", alpha = "I", style = CalculatorButtonStyle.UTILITY),
         SciKey("hyp", alpha = "J", isToggle = true),
     ),
     listOf(
@@ -69,39 +69,39 @@ private val keyRows = listOf(
         SciKey("e", alpha = "T"),
     ),
     listOf(
-        SciKey("STO", alpha = "U", style = CalculatorButtonStyle.memory),
-        SciKey("RCL", alpha = "V", style = CalculatorButtonStyle.memory),
-        SciKey("DRG▶", alpha = "W", style = CalculatorButtonStyle.memory, isToggle = true),
-        SciKey("ENG", alpha = "X", style = CalculatorButtonStyle.memory, isToggle = true),
+        SciKey("STO", alpha = "U", style = CalculatorButtonStyle.MEMORY),
+        SciKey("RCL", alpha = "V", style = CalculatorButtonStyle.MEMORY),
+        SciKey("DRG▶", alpha = "W", style = CalculatorButtonStyle.MEMORY, isToggle = true),
+        SciKey("ENG", alpha = "X", style = CalculatorButtonStyle.MEMORY, isToggle = true),
         SciKey("Ans", alpha = "Y"),
     ),
     listOf(
-        SciKey("7", style = CalculatorButtonStyle.number),
-        SciKey("8", style = CalculatorButtonStyle.number),
-        SciKey("9", style = CalculatorButtonStyle.number),
-        SciKey("DEL", style = CalculatorButtonStyle.utility),
-        SciKey("AC", style = CalculatorButtonStyle.utility),
+        SciKey("7", style = CalculatorButtonStyle.NUMBER),
+        SciKey("8", style = CalculatorButtonStyle.NUMBER),
+        SciKey("9", style = CalculatorButtonStyle.NUMBER),
+        SciKey("DEL", style = CalculatorButtonStyle.UTILITY),
+        SciKey("AC", style = CalculatorButtonStyle.UTILITY),
     ),
     listOf(
-        SciKey("4", style = CalculatorButtonStyle.number),
-        SciKey("5", style = CalculatorButtonStyle.number),
-        SciKey("6", style = CalculatorButtonStyle.number),
-        SciKey("×", style = CalculatorButtonStyle.operator),
-        SciKey("÷", style = CalculatorButtonStyle.operator),
+        SciKey("4", style = CalculatorButtonStyle.NUMBER),
+        SciKey("5", style = CalculatorButtonStyle.NUMBER),
+        SciKey("6", style = CalculatorButtonStyle.NUMBER),
+        SciKey("×", style = CalculatorButtonStyle.OPERATOR),
+        SciKey("÷", style = CalculatorButtonStyle.OPERATOR),
     ),
     listOf(
-        SciKey("1", style = CalculatorButtonStyle.number),
-        SciKey("2", style = CalculatorButtonStyle.number),
-        SciKey("3", style = CalculatorButtonStyle.number),
-        SciKey("+", style = CalculatorButtonStyle.operator),
-        SciKey("−", style = CalculatorButtonStyle.operator),
+        SciKey("1", style = CalculatorButtonStyle.NUMBER),
+        SciKey("2", style = CalculatorButtonStyle.NUMBER),
+        SciKey("3", style = CalculatorButtonStyle.NUMBER),
+        SciKey("+", style = CalculatorButtonStyle.OPERATOR),
+        SciKey("−", style = CalculatorButtonStyle.OPERATOR),
     ),
     listOf(
-        SciKey("SHIFT", style = CalculatorButtonStyle.toggle, isToggle = true),
-        SciKey("ALPHA", style = CalculatorButtonStyle.toggle, isToggle = true),
-        SciKey("0", style = CalculatorButtonStyle.number),
-        SciKey(".", style = CalculatorButtonStyle.number),
-        SciKey("=", style = CalculatorButtonStyle.equals),
+        SciKey("SHIFT", style = CalculatorButtonStyle.TOGGLE, isToggle = true),
+        SciKey("ALPHA", style = CalculatorButtonStyle.TOGGLE, isToggle = true),
+        SciKey("0", style = CalculatorButtonStyle.NUMBER),
+        SciKey(".", style = CalculatorButtonStyle.NUMBER),
+        SciKey("=", style = CalculatorButtonStyle.EQUALS),
     ),
 )
 
@@ -202,7 +202,7 @@ private fun SciRow(
                 Triple(
                     if (isSecondMode) invHypPrefix else hypPrefix,
                     if (isSecondMode) invHypPrefix else hypPrefix,
-                    if (isSecondMode) CalculatorButtonStyle.shiftSci else CalculatorButtonStyle.scientific,
+                    if (isSecondMode) CalculatorButtonStyle.SHIFT_SCI else CalculatorButtonStyle.SCIENTIFIC,
                 )
             } else {
                 Triple(
@@ -219,7 +219,7 @@ private fun SciRow(
                     (key.primary == "hyp" && key.isToggle && isHypMode)
 
             val effectiveStyle = if (key.primary == "SHIFT" || key.primary == "ALPHA")
-                CalculatorButtonStyle.toggle else style
+                CalculatorButtonStyle.TOGGLE else style
 
             CalculatorButton(
                 label = label,

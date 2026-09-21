@@ -13,6 +13,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.kraft.calculator.data.AppSettings
@@ -55,6 +56,35 @@ fun SettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+            // Theme
+            SettingsSection(title = "Appearance") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    val themeOptions = listOf(
+                        "System" to 0,
+                        "Dark" to 1,
+                        "Light" to 2,
+                        "Amoled" to 3,
+                    )
+                    themeOptions.forEach { (label, index) ->
+                        val isSelected = settings.theme.ordinal == index
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { viewModel.setTheme(AppTheme.entries[index]) },
+                            label = { Text(label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = colors.accentBlue,
+                                selectedLabelColor = Color.White,
+                            ),
+                        )
+                    }
+                }
+            }
+
             // Vibration
             SettingsSection(title = "Feedback") {
                 SettingsSwitch(

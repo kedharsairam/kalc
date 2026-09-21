@@ -1,108 +1,174 @@
 package com.kraft.calculator.presentation
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.KraftRadius
 import com.kraft.calculator.ui.theme.ThemeColors
 
+/** Styles a calculator button by its role in the UI. */
 enum class CalculatorButtonStyle {
-    number, operator, utility, equals, scientific, memory, toggle, alpha, shiftSci
+    /** Numeric input (0-9, decimal). Largest type, neutral background. */
+    NUMBER,
+    /** Arithmetic operators (+, −, ×, ÷, ^). Accent blue, medium weight. */
+    OPERATOR,
+    /** Utility keys (AC, CE, %, √, ⋯). Surface tertiary, medium type. */
+    UTILITY,
+    /** Equals key. Distinct green confirm color, semi-bold. */
+    EQUALS,
+    /** Scientific functions (sin, cos, ln, log ⋯). Orange accent on surface. */
+    SCIENTIFIC,
+    /** Memory keys (MC, MR, M+, M−). Purple accent on surface. */
+    MEMORY,
+    /** Toggle keys (DEG/RAD/GRAD, ALPHA, 2nd). Green when active. */
+    TOGGLE,
+    /** Alpha / variable keys. Red accent to signal alternate layer. */
+    ALPHA,
+    /** Shift-Sci keys (sinh, cosh, tanh on 2nd layer). Orange accent. */
+    SHIFT_SCI
 }
 
-data class ButtonColors(val background: Color, val foreground: Color)
+/** Pair of background and foreground colors for a button. */
+data class ButtonColors(val background: androidx.compose.ui.graphics.Color, val foreground: androidx.compose.ui.graphics.Color)
 
+/**
+ * Returns the background/foreground pair for [style], accounting for [isActive]
+ * (used by toggle-style buttons like DEG/RAD/GRAD).
+ *
+ * Color assignment follows Apple's guidance: one visual accent per button type,
+ * white text on all colored backgrounds (semantic contrast, not theme color),
+ * and destructive red reserved exclusively for the alpha/variable layer.
+ */
 fun buttonColors(style: CalculatorButtonStyle, isActive: Boolean, colors: ThemeColors): ButtonColors {
     return when (style) {
-        CalculatorButtonStyle.number -> ButtonColors(
+        CalculatorButtonStyle.NUMBER -> ButtonColors(
             background = colors.surfaceSecondary,
             foreground = colors.textPrimary,
         )
-        CalculatorButtonStyle.operator -> ButtonColors(
+        CalculatorButtonStyle.OPERATOR -> ButtonColors(
             background = colors.accentBlue,
-            foreground = Color.White,
+            foreground = androidx.compose.ui.graphics.Color.White,
         )
-        CalculatorButtonStyle.utility -> ButtonColors(
+        CalculatorButtonStyle.UTILITY -> ButtonColors(
             background = colors.surfaceTertiary,
             foreground = colors.textPrimary,
         )
-        CalculatorButtonStyle.equals -> ButtonColors(
+        CalculatorButtonStyle.EQUALS -> ButtonColors(
             background = colors.accentEquals,
-            foreground = Color.White,
+            foreground = androidx.compose.ui.graphics.Color.White,
         )
-        CalculatorButtonStyle.scientific -> ButtonColors(
+        CalculatorButtonStyle.SCIENTIFIC -> ButtonColors(
             background = colors.surfaceSecondary,
             foreground = colors.accentOrange,
         )
-        CalculatorButtonStyle.memory -> ButtonColors(
+        CalculatorButtonStyle.MEMORY -> ButtonColors(
             background = colors.surfaceSecondary,
             foreground = colors.accentPurple,
         )
-        CalculatorButtonStyle.toggle -> if (isActive) ButtonColors(
+        CalculatorButtonStyle.TOGGLE -> if (isActive) ButtonColors(
             background = colors.accentGreen,
-            foreground = Color.White,
+            foreground = androidx.compose.ui.graphics.Color.White,
         ) else ButtonColors(
             background = colors.surfaceTertiary,
             foreground = colors.textTertiary,
         )
-        CalculatorButtonStyle.alpha -> ButtonColors(
+        CalculatorButtonStyle.ALPHA -> ButtonColors(
             background = colors.surfaceSecondary,
             foreground = colors.accentRed,
         )
-        CalculatorButtonStyle.shiftSci -> ButtonColors(
+        CalculatorButtonStyle.SHIFT_SCI -> ButtonColors(
             background = colors.surfaceSecondary,
             foreground = colors.accentOrange,
         )
     }
 }
 
-fun buttonFontSize(style: CalculatorButtonStyle, largeFont: Boolean = false): Int {
+/**
+ * Calculator-specific type scale for buttons.
+ *
+ * Sizes are chosen for calculator usability (large targets, clear hierarchy)
+ * and do not map 1:1 to the standard KraftTypography body scale.
+ * The standard KraftTypography scale is used for labels, headers, and sheet content;
+ * this scale is for the keypad only.
+ */
+object CalculatorFontSizes {
+    /** Primary number keys (large layout). */
+    val numberLarge = 36.sp
+    /** Primary number keys (standard layout). */
+    val number = 30.sp
+    /** Operator and equals keys (large layout). */
+    val operatorLarge = 34.sp
+    /** Operator and equals keys (standard layout). */
+    val operator = 26.sp
+    /** Utility keys (large layout). */
+    val utilityLarge = 30.sp
+    /** Utility keys (standard layout). */
+    val utility = 22.sp
+    /** Scientific and shift-sci keys. */
+    val scientific = 20.sp
+    /** Memory, toggle, and alpha keys (small labels). */
+    val label = 13.sp
+}
+
+/** Returns the font size for [style], using calculator-specific scale. */
+fun buttonFontSize(style: CalculatorButtonStyle, largeFont: Boolean = false): androidx.compose.ui.unit.TextUnit {
     return when (style) {
-        CalculatorButtonStyle.number -> if (largeFont) 36 else 30
-        CalculatorButtonStyle.operator, CalculatorButtonStyle.equals -> if (largeFont) 34 else 26
-        CalculatorButtonStyle.utility -> if (largeFont) 30 else 22
-        CalculatorButtonStyle.scientific, CalculatorButtonStyle.shiftSci -> 20
-        CalculatorButtonStyle.memory, CalculatorButtonStyle.toggle, CalculatorButtonStyle.alpha -> 13
+        CalculatorButtonStyle.NUMBER -> if (largeFont) CalculatorFontSizes.numberLarge else CalculatorFontSizes.number
+        CalculatorButtonStyle.OPERATOR, CalculatorButtonStyle.EQUALS -> if (largeFont) CalculatorFontSizes.operatorLarge else CalculatorFontSizes.operator
+        CalculatorButtonStyle.UTILITY -> if (largeFont) CalculatorFontSizes.utilityLarge else CalculatorFontSizes.utility
+        CalculatorButtonStyle.SCIENTIFIC, CalculatorButtonStyle.SHIFT_SCI -> CalculatorFontSizes.scientific
+        CalculatorButtonStyle.MEMORY, CalculatorButtonStyle.TOGGLE, CalculatorButtonStyle.ALPHA -> CalculatorFontSizes.label
     }
 }
 
+/** Returns the font weight for [style]. Only EQUALS is semi-bold; all others medium or normal. */
 fun buttonFontWeight(style: CalculatorButtonStyle): FontWeight {
     return when (style) {
-        CalculatorButtonStyle.number -> FontWeight.Normal
-        CalculatorButtonStyle.equals -> FontWeight.SemiBold
+        CalculatorButtonStyle.NUMBER -> FontWeight.Normal
+        CalculatorButtonStyle.EQUALS -> FontWeight.SemiBold
         else -> FontWeight.Medium
     }
 }
 
-val LocalHapticsEnabled = androidx.compose.runtime.staticCompositionLocalOf { true }
+/**
+ * Composition local that controls whether haptic feedback is enabled for button presses.
+ * Set from settings via `LocalHapticsEnabled provides ...` in the screen.
+ */
+val LocalHapticsEnabled = staticCompositionLocalOf { true }
 
 /**
- * Maps symbol labels to spoken descriptions for accessibility.
+ * Returns an accessibility content description for [label].
+ *
+ * Maps symbolic labels (⌫, ±, ÷, ×, sin⁻¹, etc.) to spoken descriptions
+ * so TalkBack reads meaningful text instead of the symbol character.
  */
 fun buttonDescription(label: String): String = when (label) {
     "⌫", "DEL" -> "Delete"
-    "±", "(−)" -> "Plus minus, toggle sign"
+    "±", "−\u2212" -> "Plus minus, toggle sign"
     "÷" -> "Divide"
     "×" -> "Multiply"
     "−" -> "Minus"
     "+" -> "Plus"
     "=" -> "Equals"
     "AC" -> "All clear"
+    "CE" -> "Clear entry"
     "%" -> "Percent"
     "√" -> "Square root"
     "∛" -> "Cube root"
@@ -124,11 +190,25 @@ fun buttonDescription(label: String): String = when (label) {
     "HYP", "hyp" -> "Hyperbolic"
     "ENG" -> "Engineering notation"
     "Ans" -> "Last answer"
+    "Ran#" -> "Random number"
+    "→DMS" -> "Convert to degrees minutes seconds"
+    "→Decimal" -> "Convert to decimal"
+    "→Frac" -> "Convert to fraction"
+    "x²" -> "Square"
+    "x³" -> "Cube"
+    "x⁻¹" -> "Reciprocal"
     "sin⁻¹", "cos⁻¹", "tan⁻¹" -> "Inverse ${label.dropLast(2)}"
     "sinh⁻¹", "cosh⁻¹", "tanh⁻¹" -> "Inverse hyperbolic ${label.dropLast(2)}"
     else -> label
 }
 
+/**
+ * A single calculator keypad button.
+ *
+ * Uses [CalculatorButtonStyle] to determine color, font size, and weight.
+ * Provides semantic labels for accessibility and haptic feedback when enabled.
+ * Minimum touch target is 44dp per Apple HIG.
+ */
 @Composable
 fun CalculatorButton(
     label: String,
@@ -137,29 +217,24 @@ fun CalculatorButton(
     modifier: Modifier = Modifier,
     isActive: Boolean = false,
     largeFont: Boolean = false,
-    colors: ThemeColors = KraftThemeColors.light,
+    colors: ThemeColors = com.kraft.calculator.ui.theme.KraftThemeColors.light,
 ) {
     val (bg, fg) = buttonColors(style, isActive, colors)
-    val fontSize = buttonFontSize(style, largeFont).sp
+    val fontSize = buttonFontSize(style, largeFont)
     val fontWeight = buttonFontWeight(style)
-
-    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val haptics = LocalHapticFeedback.current
     val hapticsEnabled = LocalHapticsEnabled.current
 
     Button(
         onClick = {
             if (hapticsEnabled) {
-                haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove)
+                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             }
             onClick()
         },
         modifier = modifier
             .fillMaxSize()
-            .defaultMinSize(minWidth = 44.dp, minHeight = 44.dp)
-            .semantics {
-                contentDescription = buttonDescription(label)
-                if (isActive) selected = true
-            },
+            .defaultMinSize(minWidth = 44.dp, minHeight = 44.dp),
         shape = RoundedCornerShape(KraftRadius.standard),
         colors = ButtonDefaults.buttonColors(
             containerColor = bg,
