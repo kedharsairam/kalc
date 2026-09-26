@@ -24,6 +24,7 @@ import com.kraft.calculator.domain.ConverterCategory
 import com.kraft.calculator.domain.FinanceCalculators
 import com.kraft.calculator.domain.UnitConverter
 import com.kraft.calculator.ui.theme.KraftRadius
+import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.ThemeColors
 
 private enum class ConverterTool { UNITS, EMI, GST }
@@ -62,7 +63,7 @@ fun ConverterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = KraftSpacing.spacing16),
         ) {
             // Tool tabs
             Row(
@@ -70,8 +71,8 @@ fun ConverterScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(KraftRadius.standard))
                     .background(colors.surfaceSecondary)
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    .padding(KraftSpacing.spacing4),
+                horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing4),
             ) {
                 ConverterTool.entries.forEach { t ->
                     val selected = tool == t
@@ -98,7 +99,7 @@ fun ConverterScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(KraftSpacing.spacing16))
 
             when (tool) {
                 ConverterTool.UNITS -> UnitsTab(colors)
@@ -137,12 +138,12 @@ private fun UnitsTab(colors: ThemeColors) {
 
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing16),
     ) {
         // Category chips
         androidx.compose.foundation.layout.FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8),
+            verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8),
         ) {
             ConverterCategory.entries.forEach { cat ->
                 val selected = category == cat
@@ -164,13 +165,13 @@ private fun UnitsTab(colors: ThemeColors) {
             shape = RoundedCornerShape(KraftRadius.large),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.End) {
+            Column(Modifier.padding(KraftSpacing.spacing24), horizontalAlignment = Alignment.End) {
                 Text(
                     text = "$input ${from.symbol}",
                     fontSize = 16.sp,
                     color = colors.textSecondary,
                 )
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(KraftSpacing.spacing4))
                 Text(
                     text = if (result == null) "—"
                     else {
@@ -199,7 +200,7 @@ private fun UnitsTab(colors: ThemeColors) {
         // From/To
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             UnitDropdown(
@@ -228,7 +229,7 @@ private fun UnitsTab(colors: ThemeColors) {
                 modifier = Modifier.weight(1f),
             )
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(KraftSpacing.spacing16))
     }
 }
 
@@ -249,14 +250,14 @@ private fun EmiTab(colors: ThemeColors) {
 
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
     ) {
         Card(
             colors = CardDefaults.cardColors(containerColor = colors.surface),
             shape = RoundedCornerShape(KraftRadius.large),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.End) {
+            Column(Modifier.padding(KraftSpacing.spacing24), horizontalAlignment = Alignment.End) {
                 Text("Monthly EMI", fontSize = 14.sp, color = colors.textSecondary)
                 Text(
                     text = if (emiResult == null) "—" else "₹${"%,.2f".format(emiResult.emi)}",
@@ -266,7 +267,7 @@ private fun EmiTab(colors: ThemeColors) {
                     color = colors.textPrimary,
                 )
                 if (emiResult != null) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(KraftSpacing.spacing8))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column(horizontalAlignment = Alignment.Start) {
                             Text("Interest", fontSize = 12.sp, color = colors.textTertiary)
@@ -281,11 +282,11 @@ private fun EmiTab(colors: ThemeColors) {
             }
         }
         OutlinedTextField(value = loanAmt, onValueChange = { loanAmt = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Loan amount (₹)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth())
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12)) {
             OutlinedTextField(value = loanRate, onValueChange = { loanRate = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Rate %") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
             OutlinedTextField(value = loanMonths, onValueChange = { loanMonths = it.filter { c -> c.isDigit() } }, label = { Text("Months") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.weight(1f))
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(KraftSpacing.spacing16))
     }
 }
 
@@ -304,18 +305,34 @@ private fun GstTab(colors: ThemeColors) {
 
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(selected = gstForward, onClick = { gstForward = true }, label = { Text("Add GST") })
-            FilterChip(selected = !gstForward, onClick = { gstForward = false }, label = { Text("Remove GST") })
+        Row(horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8)) {
+            FilterChip(
+                selected = gstForward,
+                onClick = { gstForward = true },
+                label = { Text("Add GST") },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = colors.accentBlue,
+                    selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                ),
+            )
+            FilterChip(
+                selected = !gstForward,
+                onClick = { gstForward = false },
+                label = { Text("Remove GST") },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = colors.accentBlue,
+                    selectedLabelColor = androidx.compose.ui.graphics.Color.White,
+                ),
+            )
         }
         Card(
             colors = CardDefaults.cardColors(containerColor = colors.surface),
             shape = RoundedCornerShape(KraftRadius.large),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.End) {
+            Column(Modifier.padding(KraftSpacing.spacing24), horizontalAlignment = Alignment.End) {
                 Text(if (gstForward) "Total incl. tax" else "Net amount", fontSize = 14.sp, color = colors.textSecondary)
                 Text(
                     text = if (gstResult == null) "—"
@@ -326,7 +343,7 @@ private fun GstTab(colors: ThemeColors) {
                     color = colors.textPrimary,
                 )
                 if (gstResult != null) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(KraftSpacing.spacing8))
                     Text(
                         text = "Tax ₹${"%.2f".format(gstResult.tax)} (CGST ₹${"%.2f".format(gstResult.cgst)} + SGST ₹${"%.2f".format(gstResult.sgst)})",
                         fontSize = 14.sp,
@@ -335,11 +352,11 @@ private fun GstTab(colors: ThemeColors) {
                 }
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12)) {
             OutlinedTextField(value = gstAmt, onValueChange = { gstAmt = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Amount (₹)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
             OutlinedTextField(value = gstRate, onValueChange = { gstRate = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Rate %") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(KraftSpacing.spacing16))
     }
 }
 
@@ -359,10 +376,16 @@ private fun UnitDropdown(
         modifier = modifier,
     ) {
         OutlinedTextField(
-            value = units.getOrElse(selected) { "" },
+            // Field shows the unit name only (full "name (symbol)" lives in the
+            // menu rows) — the half-width field clips suffixed symbols.
+            // beforeLast keeps in-name qualifiers like "Gallons (US)".
+            value = units.getOrElse(selected) { "" }.let { full ->
+                if (full.endsWith(")")) full.substringBeforeLast(" (") else full
+            },
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
+            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor().fillMaxWidth(),
             singleLine = true,
