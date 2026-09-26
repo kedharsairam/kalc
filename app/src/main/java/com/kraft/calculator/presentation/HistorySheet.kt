@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kraft.calculator.domain.CalculationEntry
+import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.ThemeColors
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -40,13 +41,13 @@ fun HistorySheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 8.dp)
+            .padding(top = KraftSpacing.spacing8)
     ) {
         // Single clean header: title + count + clear
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = KraftSpacing.spacing20, vertical = KraftSpacing.spacing12),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -58,17 +59,17 @@ fun HistorySheet(
                     color = colors.textPrimary,
                 )
                 if (history.isNotEmpty()) {
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(KraftSpacing.spacing8))
                     Surface(
                         color = colors.surfaceTertiary,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(KraftSpacing.spacing12),
                     ) {
                         Text(
                             text = history.size.toString(),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = colors.textSecondary,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = KraftSpacing.spacing2),
                         )
                     }
                 }
@@ -76,7 +77,7 @@ fun HistorySheet(
             if (history.isNotEmpty()) {
                 TextButton(
                     onClick = onClearAll,
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = KraftSpacing.spacing12, vertical = KraftSpacing.spacing8),
                 ) {
                     Text(
                         text = "Clear all",
@@ -93,9 +94,9 @@ fun HistorySheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 48.dp, horizontal = 32.dp),
+                    .padding(vertical = KraftSpacing.spacing48, horizontal = KraftSpacing.spacing32),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
             ) {
                 Icon(
                     imageVector = Icons.Default.History,
@@ -120,7 +121,7 @@ fun HistorySheet(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(bottom = 24.dp),
+                contentPadding = PaddingValues(bottom = KraftSpacing.spacing24),
             ) {
                 items(
                     items = history,
@@ -160,7 +161,7 @@ private fun HistoryTile(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
+                .padding(start = KraftSpacing.spacing20, end = KraftSpacing.spacing8, top = KraftSpacing.spacing14, bottom = KraftSpacing.spacing14),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
@@ -177,7 +178,7 @@ private fun HistoryTile(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(KraftSpacing.spacing2))
             Text(
                 text = "= ${formatHistoryResult(entry.result)}",
                 fontSize = 24.sp,
@@ -189,7 +190,7 @@ private fun HistoryTile(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(KraftSpacing.spacing2))
             Text(
                 text = timeLabel,
                 fontSize = 12.sp,
@@ -206,7 +207,7 @@ private fun HistoryTile(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "Delete ${entry.expression}",
                     tint = colors.textTertiary,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(KraftSpacing.spacing20),
                 )
             }
         }
