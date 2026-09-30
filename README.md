@@ -60,6 +60,14 @@ Requires JDK 21+, Android SDK 36.
 
 No permissions beyond basics. No internet access. No analytics. See source for verification.
 
+## Support
+
+If you enjoy Kalc, buy me a coffee:
+
+<p align="center">
+  <a href="https://buymeacoffee.com/kedhartech"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="182"></a>
+</p>
+
 ## License
 
 [MIT](LICENSE)
