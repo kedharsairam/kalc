@@ -1,64 +1,69 @@
 # Kalc
 
-A clean, private calculator for Android. No ads. No analytics. No trackers.
+A calculator that keeps its own business. Scientific functions, variables, nine categories of unit conversion, EMI and GST — with a history that is encrypted on the device and never leaves it.
+
+**Zero permissions.** Not "no tracking" — the manifest declares none at all, so there is no network access, no storage access, and nothing to revoke later.
 
 <p align="center">
   <a href="https://github.com/kedharsairam/kalc/releases/latest"><img src="https://img.shields.io/github/v/release/kedharsairam/kalc?style=for-the-badge&label=Download" alt="Download APK"></a>
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
-  <img src="https://img.shields.io/badge/Platform-Android-blue?style=for-the-badge" alt="Android">
+  <img src="https://img.shields.io/badge/Permissions-none-blue?style=for-the-badge" alt="No permissions">
 </p>
 
 ---
 
-## Features
+## What it does
 
-**Basic + Scientific** — Full expression parser with operator precedence, parentheses, and live preview. Switch between basic and scientific keypads with stable layout.
+**Basic and scientific** — A hand-written Shunting-Yard parser with operator precedence, parentheses and a live preview. Basic and scientific keypads, so the layout does not jump when you switch.
 
-**Scientific functions** — Trigonometry (sin/cos/tan + inverses + hyperbolic) in DEG/RAD/GRAD, logarithms (ln/log), exponentials, roots (√/∛/nth), powers, factorials, combinations (nCr/nPr), constants (π/e/τ), DMS degrees, fractions, engineering notation.
+**The functions you actually reach for** — Trigonometry and its inverses, hyperbolic functions, DEG/RAD/GRAD, logarithms, exponentials, roots, powers, factorials, nCr and nPr, π/e/τ, DMS degrees, fractions and engineering notation.
 
-**Variables** — Assign values like `rent = 1200`, then use `rent/3`. Math Notes style. Session-persistent.
+**Variables** — Type `rent = 1200`, then use `rent/3` later in the session. Math Notes style, and the values survive until you close the app.
 
-**Unit converter** — 9 categories: Length, Area, Volume, Mass, Temperature, Time, Speed, Pressure, Energy. Live conversion with swap.
+**Nine categories of unit** — Length, area, volume, mass, temperature, time, speed, pressure and energy. Live conversion, with a swap.
 
-**Finance tools** — Loan EMI calculator with amortization breakdown. India GST calculator (add/remove, CGST/SGST split).
+**EMI and GST** — Loan EMI with an amortisation breakdown, and an Indian GST calculator that splits CGST/SGST.
 
-**History** — Every calculation saved locally with Room database. Tap to reload, swipe to delete. Size configurable.
-
-**Private** — No accounts. No network access. History stored on-device with backup excluded. Never uploaded.
-
-**Customizable** — Vibration toggle, decimal precision (2-15), history size, dark theme.
-
----
-
-## Tech
-
-| Layer | Technology |
-|-------|-----------|
-| Language | Kotlin |
-| UI | Jetpack Compose + Material 3 |
-| Database | Room (history) |
-| Preferences | DataStore |
-| Parser | Hand-written Shunting-Yard |
-| Tests | JUnit (67 engine tests, all passing) |
-
----
-
-## Build
-
-```bash
-./gradlew assembleDebug      # debug APK
-./gradlew assembleRelease    # release APK (debug-signed)
-./gradlew test               # unit tests
-./gradlew lintDebug          # lint
-```
-
-Requires JDK 21+, Android SDK 36.
-
----
+**A home-screen widget** — A Glance widget, so the answer is one tap away without opening the app.
 
 ## Privacy
 
-No permissions beyond basics. No internet access. No analytics. See source for verification.
+No accounts. No network access. No analytics. No trackers.
+
+History is stored on-device with backup excluded, and it is **encrypted at rest**: every field is sealed with AES-256-GCM under a Keystore-backed master key — hardware-backed where the device has it — with a fresh 12-byte IV per field. Tapping a history row to reuse it decrypts on the spot; the plaintext is never written to disk.
+
+Full detail in [PRIVACY.md](PRIVACY.md).
+
+---
+
+<details>
+<summary><strong>Tech</strong></summary>
+
+| Layer | Technology |
+|---|---|
+| Language | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| Widget | Glance |
+| Database | Room, with field-level encryption |
+| Preferences | DataStore |
+| Parser | Hand-written Shunting-Yard |
+| Tests | JUnit — 67 engine tests |
+
+</details>
+
+<details>
+<summary><strong>Build from source</strong></summary>
+
+```bash
+./gradlew assembleDebug      # debug APK
+./gradlew assembleRelease    # release APK, debug-signed
+./gradlew test               # 67 unit tests
+./gradlew lintDebug          # lint
+```
+
+Requires JDK 17, Android SDK 36 (`minSdk 26`).
+
+</details>
 
 ## Support
 
