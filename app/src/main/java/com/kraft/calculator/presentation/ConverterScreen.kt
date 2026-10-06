@@ -23,9 +23,10 @@ import androidx.compose.ui.unit.sp
 import com.kraft.calculator.domain.ConverterCategory
 import com.kraft.calculator.domain.FinanceCalculators
 import com.kraft.calculator.domain.UnitConverter
-import com.kraft.calculator.ui.theme.KraftRadius
-import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.ThemeColors
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
+import com.kraft.calculator.ui.theme.DisplayFontSizes
 
 private enum class ConverterTool { UNITS, EMI, GST }
 
@@ -63,25 +64,25 @@ fun ConverterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = KraftSpacing.spacing16),
+                .padding(horizontal = KraftSpacing.Spacing16),
         ) {
             // Tool tabs
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(KraftRadius.standard))
+                    .clip(RoundedCornerShape(KraftRadius.Standard))
                     .background(colors.surfaceSecondary)
-                    .padding(KraftSpacing.spacing4),
-                horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing4),
+                    .padding(KraftSpacing.Spacing4),
+                horizontalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing4),
             ) {
                 ConverterTool.entries.forEach { t ->
                     val selected = tool == t
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .clip(RoundedCornerShape(KraftRadius.small))
+                            .clip(RoundedCornerShape(KraftRadius.Small))
                             .background(if (selected) colors.accentBlue else androidx.compose.ui.graphics.Color.Transparent)
-                            .padding(vertical = 10.dp)
+                            .padding(vertical = KraftSpacing.Spacing8)
                             .clickable { tool = t },
                         contentAlignment = Alignment.Center,
                     ) {
@@ -91,7 +92,7 @@ fun ConverterScreen(
                                 ConverterTool.EMI -> "EMI"
                                 ConverterTool.GST -> "GST"
                             },
-                            fontSize = 15.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                             color = if (selected) androidx.compose.ui.graphics.Color.White else colors.textSecondary,
                         )
@@ -99,7 +100,7 @@ fun ConverterScreen(
                 }
             }
 
-            Spacer(Modifier.height(KraftSpacing.spacing16))
+            Spacer(Modifier.height(KraftSpacing.Spacing16))
 
             when (tool) {
                 ConverterTool.UNITS -> UnitsTab(colors)
@@ -138,12 +139,12 @@ private fun UnitsTab(colors: ThemeColors) {
 
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
-        verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing16),
+        verticalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing16),
     ) {
         // Category chips
         androidx.compose.foundation.layout.FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8),
-            verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8),
+            horizontalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing8),
+            verticalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing8),
         ) {
             ConverterCategory.entries.forEach { cat ->
                 val selected = category == cat
@@ -162,16 +163,17 @@ private fun UnitsTab(colors: ThemeColors) {
         // Result hero
         Card(
             colors = CardDefaults.cardColors(containerColor = colors.surface),
-            shape = RoundedCornerShape(KraftRadius.large),
+            shape = RoundedCornerShape(KraftRadius.Medium),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(Modifier.padding(KraftSpacing.spacing24), horizontalAlignment = Alignment.End) {
+            Column(Modifier.padding(KraftSpacing.Spacing24), horizontalAlignment = Alignment.End) {
                 Text(
                     text = "$input ${from.symbol}",
-                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Normal,
                     color = colors.textSecondary,
                 )
-                Spacer(Modifier.height(KraftSpacing.spacing4))
+                Spacer(Modifier.height(KraftSpacing.Spacing4))
                 Text(
                     text = if (result == null) "—"
                     else {
@@ -179,7 +181,7 @@ private fun UnitsTab(colors: ThemeColors) {
                         (if (r == r.toLong().toDouble()) r.toLong().toString()
                         else "%.6g".format(r).trimEnd('0').trimEnd('.')) + " ${to.symbol}"
                     },
-                    fontSize = 36.sp,
+                    fontSize = DisplayFontSizes.resultReadout,
                     fontWeight = FontWeight.Bold,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     color = colors.textPrimary,
@@ -200,7 +202,7 @@ private fun UnitsTab(colors: ThemeColors) {
         // From/To
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8),
+            horizontalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing8),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             UnitDropdown(
@@ -229,7 +231,7 @@ private fun UnitsTab(colors: ThemeColors) {
                 modifier = Modifier.weight(1f),
             )
         }
-        Spacer(Modifier.height(KraftSpacing.spacing16))
+        Spacer(Modifier.height(KraftSpacing.Spacing16))
     }
 }
 
@@ -250,43 +252,43 @@ private fun EmiTab(colors: ThemeColors) {
 
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
-        verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
+        verticalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing12),
     ) {
         Card(
             colors = CardDefaults.cardColors(containerColor = colors.surface),
-            shape = RoundedCornerShape(KraftRadius.large),
+            shape = RoundedCornerShape(KraftRadius.Medium),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(Modifier.padding(KraftSpacing.spacing24), horizontalAlignment = Alignment.End) {
-                Text("Monthly EMI", fontSize = 14.sp, color = colors.textSecondary)
+            Column(Modifier.padding(KraftSpacing.Spacing24), horizontalAlignment = Alignment.End) {
+                Text("Monthly EMI", style = MaterialTheme.typography.bodySmall, color = colors.textSecondary)
                 Text(
                     text = if (emiResult == null) "—" else "₹${"%,.2f".format(emiResult.emi)}",
-                    fontSize = 36.sp,
+                    fontSize = DisplayFontSizes.resultReadout,
                     fontWeight = FontWeight.Bold,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     color = colors.textPrimary,
                 )
                 if (emiResult != null) {
-                    Spacer(Modifier.height(KraftSpacing.spacing8))
+                    Spacer(Modifier.height(KraftSpacing.Spacing8))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Column(horizontalAlignment = Alignment.Start) {
-                            Text("Interest", fontSize = 12.sp, color = colors.textTertiary)
-                            Text("₹${"%,.0f".format(emiResult.totalInterest)}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = colors.textPrimary)
+                            Text("Interest", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Normal, color = colors.textTertiary)
+                            Text("₹${"%,.0f".format(emiResult.totalInterest)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = colors.textPrimary)
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Total", fontSize = 12.sp, color = colors.textTertiary)
-                            Text("₹${"%,.0f".format(emiResult.totalPayment)}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = colors.textPrimary)
+                            Text("Total", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Normal, color = colors.textTertiary)
+                            Text("₹${"%,.0f".format(emiResult.totalPayment)}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = colors.textPrimary)
                         }
                     }
                 }
             }
         }
         OutlinedTextField(value = loanAmt, onValueChange = { loanAmt = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Loan amount (₹)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth())
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing12)) {
             OutlinedTextField(value = loanRate, onValueChange = { loanRate = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Rate %") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
             OutlinedTextField(value = loanMonths, onValueChange = { loanMonths = it.filter { c -> c.isDigit() } }, label = { Text("Months") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true, modifier = Modifier.weight(1f))
         }
-        Spacer(Modifier.height(KraftSpacing.spacing16))
+        Spacer(Modifier.height(KraftSpacing.Spacing16))
     }
 }
 
@@ -305,9 +307,9 @@ private fun GstTab(colors: ThemeColors) {
 
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
-        verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
+        verticalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing12),
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing8)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing8)) {
             FilterChip(
                 selected = gstForward,
                 onClick = { gstForward = true },
@@ -329,34 +331,34 @@ private fun GstTab(colors: ThemeColors) {
         }
         Card(
             colors = CardDefaults.cardColors(containerColor = colors.surface),
-            shape = RoundedCornerShape(KraftRadius.large),
+            shape = RoundedCornerShape(KraftRadius.Medium),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(Modifier.padding(KraftSpacing.spacing24), horizontalAlignment = Alignment.End) {
-                Text(if (gstForward) "Total incl. tax" else "Net amount", fontSize = 14.sp, color = colors.textSecondary)
+            Column(Modifier.padding(KraftSpacing.Spacing24), horizontalAlignment = Alignment.End) {
+                Text(if (gstForward) "Total incl. tax" else "Net amount", style = MaterialTheme.typography.bodySmall, color = colors.textSecondary)
                 Text(
                     text = if (gstResult == null) "—"
                     else "₹${"%,.2f".format(if (gstForward) gstResult.gross else gstResult.net)}",
-                    fontSize = 36.sp,
+                    fontSize = DisplayFontSizes.resultReadout,
                     fontWeight = FontWeight.Bold,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
                     color = colors.textPrimary,
                 )
                 if (gstResult != null) {
-                    Spacer(Modifier.height(KraftSpacing.spacing8))
+                    Spacer(Modifier.height(KraftSpacing.Spacing8))
                     Text(
                         text = "Tax ₹${"%.2f".format(gstResult.tax)} (CGST ₹${"%.2f".format(gstResult.cgst)} + SGST ₹${"%.2f".format(gstResult.sgst)})",
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         color = colors.textSecondary,
                     )
                 }
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing12)) {
             OutlinedTextField(value = gstAmt, onValueChange = { gstAmt = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Amount (₹)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
             OutlinedTextField(value = gstRate, onValueChange = { gstRate = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Rate %") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.weight(1f))
         }
-        Spacer(Modifier.height(KraftSpacing.spacing16))
+        Spacer(Modifier.height(KraftSpacing.Spacing16))
     }
 }
 
@@ -385,7 +387,7 @@ private fun UnitDropdown(
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp),
+            textStyle = MaterialTheme.typography.bodyMedium,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier.menuAnchor().fillMaxWidth(),
             singleLine = true,

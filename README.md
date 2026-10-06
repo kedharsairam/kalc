@@ -61,9 +61,28 @@ Full detail in [PRIVACY.md](PRIVACY.md).
 ./gradlew lintDebug          # lint
 ```
 
-Requires JDK 17, Android SDK 36 (`minSdk 26`).
+Requires JDK 21, Android SDK 37 (`minSdk 26`).
 
 </details>
+
+## Design
+
+Spacing, type, radius, motion and touch targets come from
+[kraft-foundation](https://github.com/kedharsairam/kraft-foundation), which is also where the
+standard this app is built to is written down. It targets **standard 1.0.0**, and
+`kraft-lint` in that repository is what checks it.
+
+The theme system stays local: light, dark and AMOLED palettes plus the `ThemeColors`
+CompositionLocal, because no shared palette carries a three-way theme. The calculator's
+display scales (`DisplayFontSizes`, `CalculatorFontSizes`) stay for the same reason a
+phrasebook keeps phrase styles — a 57sp hero readout and 36sp keypad digits are content
+typography, not chrome — but take their sizes from `KraftTypeScale` where they match. The
+one radius the shared scale lacks (4dp badge corners) is a stated waiver, not a token:
+if a second app needs 4, the token gets added then.
+
+Kalc is the fourth of nine apps to move. Its toolchain moved with it: Gradle 8.11.1 →
+9.7.1, AGP 8.9.1 → 9.3.1, Kotlin 2.1.0 → 2.2.10, SDK 36 → 37, matching the rest of the
+portfolio.
 
 ## Support
 

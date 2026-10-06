@@ -6,9 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.ThemeColors
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
 
 @Composable
 fun BasicKeypad(
@@ -16,7 +17,7 @@ fun BasicKeypad(
     modifier: Modifier = Modifier,
     colors: ThemeColors = if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light,
 ) {
-    val gap = KraftSpacing.spacing8
+    val gap = KraftSpacing.Spacing8
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val btnH = KeypadSizing.basicRowHeight(maxWidth)

@@ -20,8 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kraft.calculator.ui.theme.KraftRadius
 import com.kraft.calculator.ui.theme.ThemeColors
+import com.kraft.calculator.ui.theme.CalculatorFontSizes
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
 
 /** Styles a calculator button by its role in the UI. */
 enum class CalculatorButtonStyle {
@@ -100,32 +102,7 @@ fun buttonColors(style: CalculatorButtonStyle, isActive: Boolean, colors: ThemeC
     }
 }
 
-/**
- * Calculator-specific type scale for buttons.
- *
- * Sizes are chosen for calculator usability (large targets, clear hierarchy)
- * and do not map 1:1 to the standard KraftTypography body scale.
- * The standard KraftTypography scale is used for labels, headers, and sheet content;
- * this scale is for the keypad only.
- */
-object CalculatorFontSizes {
-    /** Primary number keys (large layout). */
-    val numberLarge = 36.sp
-    /** Primary number keys (standard layout). */
-    val number = 30.sp
-    /** Operator and equals keys (large layout). */
-    val operatorLarge = 34.sp
-    /** Operator and equals keys (standard layout). */
-    val operator = 26.sp
-    /** Utility keys (large layout). */
-    val utilityLarge = 30.sp
-    /** Utility keys (standard layout). */
-    val utility = 22.sp
-    /** Scientific and shift-sci keys. */
-    val scientific = 20.sp
-    /** Memory, toggle, and alpha keys (small labels). */
-    val label = 13.sp
-}
+
 
 /** Returns the font size for [style], using calculator-specific scale. */
 fun buttonFontSize(style: CalculatorButtonStyle, largeFont: Boolean = false): androidx.compose.ui.unit.TextUnit {
@@ -234,8 +211,8 @@ fun CalculatorButton(
         },
         modifier = modifier
             .fillMaxSize()
-            .defaultMinSize(minWidth = 44.dp, minHeight = 44.dp),
-        shape = RoundedCornerShape(KraftRadius.standard),
+            .defaultMinSize(minWidth = KraftSpacing.TouchTarget, minHeight = KraftSpacing.TouchTarget),
+        shape = RoundedCornerShape(KraftRadius.Standard),
         colors = ButtonDefaults.buttonColors(
             containerColor = bg,
             contentColor = fg,

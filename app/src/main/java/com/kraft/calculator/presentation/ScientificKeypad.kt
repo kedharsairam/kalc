@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.kraft.calculator.domain.AngleMode
 import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.ThemeColors
+import com.kraft.ui.tokens.KraftSpacing
 
 private data class SciKey(
     val primary: String,
@@ -117,9 +118,9 @@ fun ScientificKeypad(
     modifier: Modifier = Modifier,
     colors: ThemeColors = if (isSystemInDarkTheme()) KraftThemeColors.dark else KraftThemeColors.light,
 ) {
-    val gap = 6.dp
-    val sectionGap = 12.dp
-    val bottomGap = 8.dp
+    val gap = KraftSpacing.Spacing6
+    val sectionGap = KraftSpacing.Spacing12
+    val bottomGap = KraftSpacing.Spacing8
     val cols = 5
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
@@ -127,8 +128,8 @@ fun ScientificKeypad(
         val btnW = (w - gap * (cols + 1)) / cols
         if (btnW <= 0.dp) return@BoxWithConstraints
 
-        val functionBtnH = maxOf(btnW * 0.5f, 44.dp)
-        val numberBtnH = maxOf(btnW * 0.8f, 48.dp)
+        val functionBtnH = maxOf(btnW * 0.5f, KraftSpacing.TouchTarget)
+        val numberBtnH = maxOf(btnW * 0.8f, KraftSpacing.Spacing48)
 
         // Total height = scientific keypad total (same calculation as KeypadSizing)
         // We just use the values directly here for the rows.

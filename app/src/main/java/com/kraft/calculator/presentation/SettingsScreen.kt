@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kraft.calculator.data.AppSettings
 import com.kraft.calculator.data.AppTheme
-import com.kraft.calculator.ui.theme.KraftRadius
-import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.ThemeColors
 import kotlinx.coroutines.launch
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,10 +62,10 @@ fun SettingsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(
-                    horizontal = KraftSpacing.spacing16,
-                    vertical = KraftSpacing.spacing8,
+                    horizontal = KraftSpacing.Spacing16,
+                    vertical = KraftSpacing.Spacing8,
                 ),
-            verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
+            verticalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing12),
         ) {
             // Theme
             SettingsSectionHeader(title = "Appearance", colors = colors)
@@ -74,8 +74,8 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            horizontal = KraftSpacing.spacing16,
-                            vertical = KraftSpacing.spacing12,
+                            horizontal = KraftSpacing.Spacing16,
+                            vertical = KraftSpacing.Spacing12,
                         ),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
@@ -120,8 +120,8 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.textPrimary,
                     modifier = Modifier.padding(
-                        horizontal = KraftSpacing.spacing16,
-                        vertical = KraftSpacing.spacing8,
+                        horizontal = KraftSpacing.Spacing16,
+                        vertical = KraftSpacing.Spacing8,
                     ),
                 )
                 Slider(
@@ -133,7 +133,7 @@ fun SettingsScreen(
                         thumbColor = colors.accentBlue,
                         activeTrackColor = colors.accentBlue,
                     ),
-                    modifier = Modifier.padding(horizontal = KraftSpacing.spacing16),
+                    modifier = Modifier.padding(horizontal = KraftSpacing.Spacing16),
                 )
                 SettingsInsetDivider(colors = colors)
                 Text(
@@ -141,8 +141,8 @@ fun SettingsScreen(
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.textPrimary,
                     modifier = Modifier.padding(
-                        horizontal = KraftSpacing.spacing16,
-                        vertical = KraftSpacing.spacing8,
+                        horizontal = KraftSpacing.Spacing16,
+                        vertical = KraftSpacing.Spacing8,
                     ),
                 )
                 Slider(
@@ -154,9 +154,9 @@ fun SettingsScreen(
                         thumbColor = colors.accentBlue,
                         activeTrackColor = colors.accentBlue,
                     ),
-                    modifier = Modifier.padding(horizontal = KraftSpacing.spacing16),
+                    modifier = Modifier.padding(horizontal = KraftSpacing.Spacing16),
                 )
-                Spacer(Modifier.height(KraftSpacing.spacing8))
+                Spacer(Modifier.height(KraftSpacing.Spacing8))
             }
 
             // About
@@ -176,7 +176,7 @@ fun SettingsScreen(
                 SettingsInsetDivider(colors = colors)
                 SettingsInfoRow(title = "Source code", subtitle = "github.com/kedharsairam/kalc", colors = colors)
             }
-            Spacer(Modifier.height(KraftSpacing.spacing8))
+            Spacer(Modifier.height(KraftSpacing.Spacing8))
         }
     }
 }
@@ -186,13 +186,13 @@ fun SettingsScreen(
 private fun SettingsSectionHeader(title: String, colors: ThemeColors) {
     Text(
         text = title.uppercase(),
-        style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.8.sp),
+        style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.8.sp), // @kraft-lint-ignore type.no-raw-sp — uppercase header tracking, twice the shared 0.4
         color = colors.textTertiary,
         modifier = Modifier.padding(
-            start = KraftSpacing.spacing4,
-            end = KraftSpacing.spacing4,
-            top = KraftSpacing.spacing8,
-            bottom = KraftSpacing.spacing4,
+            start = KraftSpacing.Spacing4,
+            end = KraftSpacing.Spacing4,
+            top = KraftSpacing.Spacing8,
+            bottom = KraftSpacing.Spacing4,
         ),
     )
 }
@@ -203,12 +203,12 @@ private fun SettingsGroup(colors: ThemeColors, content: @Composable () -> Unit) 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(KraftRadius.large))
+            .clip(RoundedCornerShape(KraftRadius.Medium))
             .background(colors.surface)
             .border(
-                width = 1.dp,
+                width = KraftSpacing.BorderWidth,
                 color = colors.separator.copy(alpha = 0.55f),
-                shape = RoundedCornerShape(KraftRadius.large),
+                shape = RoundedCornerShape(KraftRadius.Medium),
             ),
     ) {
         content()
@@ -220,7 +220,7 @@ private fun SettingsGroup(colors: ThemeColors, content: @Composable () -> Unit) 
 private fun SettingsInsetDivider(colors: ThemeColors) {
     HorizontalDivider(
         color = colors.separator.copy(alpha = 0.55f),
-        modifier = Modifier.padding(start = KraftSpacing.spacing16),
+        modifier = Modifier.padding(start = KraftSpacing.Spacing16),
     )
 }
 
@@ -230,7 +230,7 @@ private fun SettingsInfoRow(title: String, subtitle: String, colors: ThemeColors
         headlineContent = { Text(title, color = colors.textPrimary) },
         supportingContent = { Text(subtitle, color = colors.textSecondary) },
         colors = ListItemDefaults.colors(containerColor = colors.surface),
-        modifier = Modifier.heightIn(min = 56.dp),
+        modifier = Modifier.heightIn(min = KraftSpacing.Spacing56),
     )
 }
 
@@ -261,7 +261,7 @@ private fun SettingsSwitch(
         },
         colors = ListItemDefaults.colors(containerColor = colors.surface),
         modifier = Modifier
-            .heightIn(min = 56.dp)
+            .heightIn(min = KraftSpacing.Spacing56)
             .clickable(
                 role = Role.Switch,
                 onClickLabel = "Toggle $title",

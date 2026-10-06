@@ -30,9 +30,6 @@ import androidx.compose.ui.unit.sp
 import com.kraft.calculator.domain.AngleMode
 import com.kraft.calculator.domain.CalculationEntry
 import com.kraft.calculator.domain.CalculatorMode
-import com.kraft.calculator.ui.theme.KraftFontSizes
-import com.kraft.calculator.ui.theme.KraftRadius
-import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.ThemeColors
 import kotlinx.coroutines.launch
@@ -40,6 +37,11 @@ import kotlin.math.roundToInt
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
+import com.kraft.calculator.ui.theme.DisplayFontSizes
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
+import com.kraft.ui.tokens.KraftTypeScale
+import com.kraft.calculator.ui.theme.DisplayMinHeight
 
 /**
  * The calculator's main display area.
@@ -50,8 +52,8 @@ import java.util.Locale
  *    an expression line + hero result (full expression state).
  * 3. Preview bar — contextual info: Ans value, stored variables, mode badges.
  *
- * All sizing uses [KraftSpacing] for layout and [DisplayFontSizes] / [KraftFontSizes]
- * for typography. No magic numbers.
+ * All sizing uses [KraftSpacing] for layout and [DisplayFontSizes] for display type.
+ * DisplayFontSizes takes shared sizes from KraftTypeScale where they match. No magic numbers.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -93,10 +95,10 @@ fun CalculatorDisplay(
             .fillMaxWidth()
             .defaultMinSize(minHeight = DisplayMinHeight.minHeight)
             .padding(
-                start = KraftSpacing.spacing20,
-                end = KraftSpacing.spacing16,
-                top = KraftSpacing.spacing8,
-                bottom = KraftSpacing.spacing8,
+                start = KraftSpacing.Spacing20,
+                end = KraftSpacing.Spacing16,
+                top = KraftSpacing.Spacing8,
+                bottom = KraftSpacing.Spacing8,
             ),
         verticalArrangement = Arrangement.Bottom,
     ) {
@@ -109,7 +111,7 @@ fun CalculatorDisplay(
                 colors = colors,
                 modifier = Modifier
                     .weight(1f, fill = false)
-                    .padding(bottom = KraftSpacing.spacing4),
+                    .padding(bottom = KraftSpacing.Spacing4),
             )
         } else {
             Spacer(Modifier.weight(1f, fill = false))
@@ -138,7 +140,7 @@ fun CalculatorDisplay(
                 // Error state — single line, title-1 size, red.
                 Text(
                     text = error,
-                    fontSize = KraftFontSizes.title1,
+                    fontSize = KraftTypeScale.Title1,
                     fontWeight = FontWeight.Medium,
                     color = colors.accentRed,
                     textAlign = TextAlign.End,
@@ -220,7 +222,7 @@ fun CalculatorDisplay(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = KraftSpacing.spacing6)
+                        .padding(top = KraftSpacing.Spacing6)
                         .combinedClickable(
                             onClick = {},
                             onLongClick = { copyText(result, "result") },
@@ -254,24 +256,7 @@ fun CalculatorDisplay(
     }
 }
 
-// ─── Display font sizes ──────────────────────────────────────────────────────
-// Calculator-display-specific type scale.
-// The hero result (57sp) is intentionally larger than the standard KraftTypography
-// scale — it is the primary read-out element, not body text.
-// Expression sizes are adaptive: shorter expressions render larger for visual weight.
-object DisplayFontSizes {
-    val heroResult = 57.sp
-    val expressionShort = 24.sp
-    val expressionMedium = 21.sp
-    val expressionLong = 18.sp
-    val expressionVeryLong = 14.sp
-    val badge = 10.sp
-}
 
-/** Minimum height for the display column. Ensures the display area never collapses. */
-object DisplayMinHeight {
-    val minHeight = 180.dp
-}
 
 // ─── Ticker tape ─────────────────────────────────────────────────────────────
 /** Last 2 calculation entries, compact right-aligned format. */
@@ -285,19 +270,19 @@ private fun TickerTape(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = KraftSpacing.spacing2),
+            .padding(top = KraftSpacing.Spacing2),
         horizontalAlignment = Alignment.End,
     ) {
         entries.reversed().forEach { entry ->
             Text(
                 text = "${entry.expression} = ${entry.result}",
-                fontSize = KraftFontSizes.caption1,
+                fontSize = KraftTypeScale.Caption1,
                 fontWeight = FontWeight.Normal,
                 color = colors.textTertiary,
                 textAlign = TextAlign.End,
                 maxLines = 1,
                 softWrap = false,
-                modifier = Modifier.padding(vertical = KraftSpacing.spacing1),
+                modifier = Modifier.padding(vertical = KraftSpacing.BorderWidth),
             )
         }
     }
@@ -327,7 +312,7 @@ private fun PreviewBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = KraftSpacing.spacing4, bottom = KraftSpacing.spacing2),
+            .padding(top = KraftSpacing.Spacing4, bottom = KraftSpacing.Spacing2),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -336,7 +321,7 @@ private fun PreviewBar(
             if (showAns) {
                 Text(
                     text = "Ans: ${formatAns(lastResult!!)}",
-                    fontSize = KraftFontSizes.caption2,
+                    fontSize = KraftTypeScale.Caption2,
                     fontWeight = FontWeight.Medium,
                     color = colors.textTertiary,
                 )
@@ -349,7 +334,7 @@ private fun PreviewBar(
                 }
                 Text(
                     text = if (showAns) "  $summary" else summary,
-                    fontSize = KraftFontSizes.caption2,
+                    fontSize = KraftTypeScale.Caption2,
                     fontWeight = FontWeight.Normal,
                     color = colors.textTertiary,
                     maxLines = 1,
@@ -391,19 +376,23 @@ private fun PreviewBar(
 private fun MiniBadge(label: String, bg: androidx.compose.ui.graphics.Color, fg: androidx.compose.ui.graphics.Color) {
     Box(
         modifier = Modifier
-            .padding(start = KraftSpacing.spacing4)
+            .padding(start = KraftSpacing.Spacing4)
             .background(
                 color = bg,
-                shape = RoundedCornerShape(KraftRadius.tiny),
+                // A 4dp corner on a badge this small. The shared radius scale has no 4 —
+                // its smallest steps are 2.5 (a drag handle) and 8 — and inventing a shared
+                // token for one badge in one app is how a scale bloats. If a second app
+                // needs 4, the token gets added then; that is the foundation's own rule.
+                shape = RoundedCornerShape(4.dp), // @kraft-lint-ignore spacing.no-raw-dp — one badge, no shared 4-radius
             )
-            .padding(horizontal = KraftSpacing.spacing4, vertical = KraftSpacing.spacing2),
+            .padding(horizontal = KraftSpacing.Spacing4, vertical = KraftSpacing.Spacing2),
     ) {
         Text(
             text = label,
             fontSize = DisplayFontSizes.badge,
             fontWeight = FontWeight.SemiBold,
             color = fg,
-            letterSpacing = 0.3.sp,
+            letterSpacing = 0.3.sp, // @kraft-lint-ignore type.no-raw-sp — badge caps tracking, no shared token fits
         )
     }
 }
@@ -453,8 +442,8 @@ private fun HairlineDivider(colors: ThemeColors) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(KraftSpacing.spacing1)
-            .padding(top = KraftSpacing.spacing2)
+            .height(KraftSpacing.BorderWidth)
+            .padding(top = KraftSpacing.Spacing2)
             .background(colors.separator),
     )
 }

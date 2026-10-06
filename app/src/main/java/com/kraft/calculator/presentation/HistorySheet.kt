@@ -22,12 +22,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kraft.calculator.domain.CalculationEntry
-import com.kraft.calculator.ui.theme.KraftSpacing
 import com.kraft.calculator.ui.theme.ThemeColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
+import com.kraft.calculator.ui.theme.HistoryRationale
+import com.kraft.calculator.ui.theme.DisplayFontSizes
 
 @Composable
 fun HistorySheet(
@@ -41,35 +44,34 @@ fun HistorySheet(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = KraftSpacing.spacing8)
+            .padding(top = KraftSpacing.Spacing8)
     ) {
         // Single clean header: title + count + clear
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = KraftSpacing.spacing20, vertical = KraftSpacing.spacing12),
+                .padding(horizontal = KraftSpacing.Spacing20, vertical = KraftSpacing.Spacing12),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "History",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
+                      style = MaterialTheme.typography.displaySmall,
+                      fontWeight = FontWeight.Bold,
                     color = colors.textPrimary,
                 )
                 if (history.isNotEmpty()) {
-                    Spacer(Modifier.width(KraftSpacing.spacing8))
+                    Spacer(Modifier.width(KraftSpacing.Spacing8))
                     Surface(
                         color = colors.surfaceTertiary,
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(KraftSpacing.spacing12),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(KraftSpacing.Spacing12),
                     ) {
                         Text(
                             text = history.size.toString(),
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.labelLarge,
                             color = colors.textSecondary,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = KraftSpacing.spacing2),
+                            modifier = Modifier.padding(horizontal = KraftSpacing.Spacing8, vertical = KraftSpacing.Spacing2),
                         )
                     }
                 }
@@ -77,11 +79,11 @@ fun HistorySheet(
             if (history.isNotEmpty()) {
                 TextButton(
                     onClick = onClearAll,
-                    contentPadding = PaddingValues(horizontal = KraftSpacing.spacing12, vertical = KraftSpacing.spacing8),
+                    contentPadding = PaddingValues(horizontal = KraftSpacing.Spacing12, vertical = KraftSpacing.Spacing8),
                 ) {
                     Text(
                         text = "Clear all",
-                        fontSize = 15.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = colors.accentRed,
                     )
@@ -94,34 +96,33 @@ fun HistorySheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = KraftSpacing.spacing48, horizontal = KraftSpacing.spacing32),
+                    .padding(vertical = KraftSpacing.Spacing48, horizontal = KraftSpacing.Spacing32),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(KraftSpacing.spacing12),
+                verticalArrangement = Arrangement.spacedBy(KraftSpacing.Spacing12),
             ) {
                 Icon(
                     imageVector = Icons.Default.History,
                     contentDescription = null,
-                    modifier = Modifier.size(56.dp),
+                    modifier = Modifier.size(KraftSpacing.Spacing56),
                     tint = colors.textTertiary,
                 )
                 Text(
                     text = "No calculations yet",
-                    fontSize = 18.sp,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     color = colors.textPrimary,
                 )
                 Text(
                     text = "Results you calculate will appear here.\nTap an entry to reload it.",
-                    fontSize = 14.sp,
+                    style = HistoryRationale,
                     color = colors.textSecondary,
                     textAlign = TextAlign.Center,
-                    lineHeight = 20.sp,
                 )
             }
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(bottom = KraftSpacing.spacing24),
+                contentPadding = PaddingValues(bottom = KraftSpacing.Spacing24),
             ) {
                 items(
                     items = history,
@@ -161,7 +162,7 @@ private fun HistoryTile(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = KraftSpacing.spacing20, end = KraftSpacing.spacing8, top = KraftSpacing.spacing14, bottom = KraftSpacing.spacing14),
+                .padding(start = KraftSpacing.Spacing20, end = KraftSpacing.Spacing8, top = KraftSpacing.Spacing16, bottom = KraftSpacing.Spacing16),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
@@ -170,18 +171,17 @@ private fun HistoryTile(
             ) {
             Text(
                 text = entry.expression,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Normal,
+                style = MaterialTheme.typography.bodyMedium,
                 color = colors.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(KraftSpacing.spacing2))
+            Spacer(Modifier.height(KraftSpacing.Spacing2))
             Text(
                 text = "= ${formatHistoryResult(entry.result)}",
-                fontSize = 24.sp,
+                fontSize = DisplayFontSizes.historyResult,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Monospace,
                 color = colors.textPrimary,
@@ -190,10 +190,11 @@ private fun HistoryTile(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
             )
-            Spacer(Modifier.height(KraftSpacing.spacing2))
+            Spacer(Modifier.height(KraftSpacing.Spacing2))
             Text(
                 text = timeLabel,
-                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Normal,
                 color = colors.textTertiary,
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth(),
@@ -201,13 +202,13 @@ private fun HistoryTile(
             }
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(KraftSpacing.TouchTarget),
             ) {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "Delete ${entry.expression}",
                     tint = colors.textTertiary,
-                    modifier = Modifier.size(KraftSpacing.spacing20),
+                    modifier = Modifier.size(KraftSpacing.Spacing20),
                 )
             }
         }

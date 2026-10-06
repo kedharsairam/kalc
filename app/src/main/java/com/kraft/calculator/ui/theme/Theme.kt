@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.kraft.calculator.data.AppTheme
 import com.kraft.calculator.ui.theme.ThemeColors
+import com.kraft.ui.tokens.KraftRadius
 
 private val LightColorScheme = lightColorScheme(
     primary = AccentBlue,
@@ -47,36 +48,11 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 val KraftShapes = Shapes(
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(20.dp),
+    small = RoundedCornerShape(KraftRadius.Small),
+    medium = RoundedCornerShape(KraftRadius.Standard),
+    large = RoundedCornerShape(KraftRadius.Medium),
+    extraLarge = RoundedCornerShape(KraftRadius.Hero),
 )
-
-object KraftRadius {
-    val tiny = 4.dp
-    val small = 8.dp
-    val standard = 12.dp
-    val large = 16.dp
-    val hero = 20.dp
-}
-
-object KraftSpacing {
-    val spacing1 = 1.dp
-    val spacing2 = 2.dp
-    val spacing4 = 4.dp
-    val spacing6 = 6.dp
-    val spacing8 = 8.dp
-    val spacing12 = 12.dp
-    val spacing14 = 14.dp
-    val spacing16 = 16.dp
-    val spacing20 = 20.dp
-    val spacing24 = 24.dp
-    val spacing32 = 32.dp
-    val spacing40 = 40.dp
-    val spacing48 = 48.dp
-    val spacing64 = 64.dp
-}
 
 /** Maps [AppTheme] + system dark mode to the correct [ThemeColors] instance. */
 fun ThemeColors.fromTheme(theme: AppTheme, systemIsDark: Boolean): ThemeColors {

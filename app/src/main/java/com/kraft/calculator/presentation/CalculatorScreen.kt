@@ -23,10 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kraft.calculator.domain.CalculatorMode
-import com.kraft.calculator.ui.theme.KraftRadius
 import com.kraft.calculator.ui.theme.KraftThemeColors
 import com.kraft.calculator.ui.theme.ThemeColors
 import com.kraft.calculator.data.AppTheme
+import com.kraft.ui.tokens.KraftSpacing
+import com.kraft.ui.tokens.KraftRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,16 +73,16 @@ fun CalculatorScreen(
             onDismissRequest = { showHistory = false },
             sheetState = sheetState,
             containerColor = activeColors.background,
-            shape = RoundedCornerShape(topStart = KraftRadius.large, topEnd = KraftRadius.large),
+            shape = RoundedCornerShape(topStart = KraftRadius.Medium, topEnd = KraftRadius.Medium),
             dragHandle = {
                 Box(
                     modifier = Modifier
-                        .padding(top = 8.dp, bottom = 4.dp)
-                        .width(36.dp)
-                        .height(6.dp)
+                        .padding(top = KraftSpacing.Spacing8, bottom = KraftSpacing.Spacing4)
+                        .width(KraftSpacing.DragHandleWidth)
+                        .height(KraftSpacing.Spacing6)
                         .background(
                             color = activeColors.textPrimary.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(3.dp),
+                            shape = RoundedCornerShape(KraftRadius.Pill),
                         ),
                 )
             },
@@ -207,7 +208,7 @@ private fun ModePill(
         modifier = Modifier
             .background(
                 color = colors.surfaceTertiary,
-                shape = RoundedCornerShape(KraftRadius.standard),
+                shape = RoundedCornerShape(KraftRadius.Standard),
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -222,8 +223,8 @@ private fun ModePill(
 
             Box(
                 modifier = Modifier
-                    .defaultMinSize(minHeight = 44.dp)
-                    .clip(RoundedCornerShape(KraftRadius.standard - 2.dp))
+                    .defaultMinSize(minHeight = KraftSpacing.TouchTarget)
+                    .clip(RoundedCornerShape(KraftRadius.Small))
                     .selectable(
                         selected = isSelected,
                         onClick = { onModeChange() },
@@ -232,15 +233,14 @@ private fun ModePill(
                     .semantics { contentDescription = description }
                     .background(
                         color = if (isSelected) colors.accentBlue else Color.Transparent,
-                        shape = RoundedCornerShape(KraftRadius.standard - 2.dp),
+                        shape = RoundedCornerShape(KraftRadius.Small),
                     )
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = KraftSpacing.Spacing16, vertical = KraftSpacing.Spacing8),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = label,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.labelLarge,
                     color = if (isSelected) Color.White
                     else colors.textTertiary,
                 )

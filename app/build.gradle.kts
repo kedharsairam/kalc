@@ -1,19 +1,18 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.10"
+    id("com.google.devtools.ksp") version "2.2.10-2.0.2"
 }
 
 android {
     namespace = "com.kraft.calculator"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.kraft.calculator"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 5
         versionName = "2.2.0"
     }
@@ -42,8 +41,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 
     packaging {
@@ -76,6 +77,10 @@ dependencies {
     ksp("androidx.room:room-compiler:2.7.2")
     implementation("androidx.glance:glance-appwidget:1.1.1")
     implementation("androidx.security:security-crypto:1.1.0")
+
+    // Kraft Foundation — composite build, substituted in settings.gradle.kts.
+    implementation("com.kraft:kraft-ui")
+    implementation("com.kraft:kraft-core")
 
     testImplementation("junit:junit:4.13.2")
 }

@@ -22,6 +22,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.Button
 import com.kraft.calculator.MainActivity
+import com.kraft.ui.tokens.KraftSpacing
 
 class KalcWidget : GlanceAppWidget() {
 
@@ -39,15 +40,15 @@ class KalcWidget : GlanceAppWidget() {
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(GlanceTheme.colors.surface)
-                .cornerRadius(16.dp)
-                .padding(12.dp),
+                .cornerRadius(KraftSpacing.Spacing16)
+                .padding(KraftSpacing.Spacing12),
             verticalAlignment = Alignment.Vertical.CenterVertically,
         ) {
             Text(
                 text = "Kalc",
                 style = TextStyle(color = GlanceTheme.colors.onSurface),
             )
-            Spacer(modifier = GlanceModifier.height(4.dp))
+            Spacer(modifier = GlanceModifier.height(KraftSpacing.Spacing4))
             Text(
                 text = "Tap to calculate",
                 style = TextStyle(color = GlanceTheme.colors.onSurfaceVariant),

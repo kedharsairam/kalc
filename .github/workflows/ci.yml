@@ -6,12 +6,37 @@ on:
   pull_request:
     branches: [master]
 
+# Kalc builds against a composite build: settings.gradle.kts does
+# includeBuild("../kraft-foundation"), so the foundation repo must exist as
+# a SIBLING directory. Both checkouts below therefore use explicit `path`s
+# that place kalc/ and kraft-foundation/ side by side in the workspace.
+#
+# The gate was added when the app first passed it. A gate added red is not
+# standardisation; it is breakage with a good excuse.
+#
+# The app and gate paths must agree with `working-directory`: the gate is
+# `../kraft-foundation/...` because the foundation is a sibling of the app,
+# and the app itself is `.`. Two attempts at this file in a sibling app got
+# one of those wrong each time, so both are stated rather than implied.
+defaults:
+  run:
+    working-directory: kalc
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Kalc
         uses: actions/checkout@v4
+        with:
+          path: kalc
+
+      # kraft-foundation is public, so no credentials are needed.
+      - name: Checkout kraft-foundation (composite-build sibling)
+        uses: actions/checkout@v4
+        with:
+          repository: kedharsairam/kraft-foundation
+          path: kraft-foundation
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -22,11 +47,16 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      # `quality.ci-runs-the-gate` fails if this step is removed.
+      - name: Quality gate
+        run: node ../kraft-foundation/tools/kraft-lint/kraft-lint.js . --format github
+
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Run lint
         run: ./gradlew lintDebug --no-daemon
 
+      # `quality.ci-runs-tests` fails if this step is removed.
       - name: Run tests
         run: ./gradlew testDebugUnitTest --no-daemon
